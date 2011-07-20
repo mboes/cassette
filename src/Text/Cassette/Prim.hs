@@ -23,7 +23,8 @@ type RCont0 r = Cont0 r
 
 type PP0 = forall r r'. K7 (Cont0 r) (RCont0 r')
 
-infixl 3 <|>
+-- Use same priority and associativity as in Parsec.
+infixr 1 <|>
 
 (<|>) :: PP a -> PP a -> PP a
 K7 f f' <|> K7 g (g' :: RCont r a) =
