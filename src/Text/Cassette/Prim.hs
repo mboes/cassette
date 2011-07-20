@@ -7,8 +7,10 @@ data K7 a b = K7 { sideA :: a, sideB :: b }
 
 infixr 9 <>
 
+-- | Composing tapes.
 (<>) :: K7 (b -> c) (c' -> b') -> K7 (a -> b) (b' -> a') -> K7 (a -> c) (c' -> a')
-K7 f f' <> K7 g g' = K7 (f . g) (g' . f')
+-- Irrefutable patterns to support definitions of combinators by coinduction.
+~(K7 f f') <> ~(K7 g g') = K7 (f . g) (g' . f')
 
 infixr 8 -->
 (-->) = (<>)
@@ -58,10 +60,7 @@ knil = K7 (\k k' s -> k (const k') s []) (\k k' s xs -> case xs of
                                                 _ -> k' xs)
 
 many :: PP a -> PP [a]
---many b = ((b <> many b) --> kcons) <|> knil
-many b =
-  ((K7 (sideA b . sideA (many b))
-       (sideB (many b) . sideB b)) --> kcons) <|> knil
+many b = ((b <> many b) --> kcons) <|> knil
 
 lit :: String -> PP0
 lit x = K7 (\k k' -> maybe k' (k k') . stripPrefix x) (write0 x)
