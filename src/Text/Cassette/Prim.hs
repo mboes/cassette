@@ -37,8 +37,8 @@ empty = K7 (\k k' s -> k') (\k k' s -> k')
 get :: Cont r String
 get = \k k' s -> k (const k') s s
 
-set :: String -> ContT r ()
-set s' = \k k' s -> k (const k') s' ()
+set :: String -> Cont0 r
+set s' = \k k' s -> k k' s'
 
 write :: (a -> String) -> RCont r a
 write f = \k k' s x -> k (k' x) (s ++ f x)
