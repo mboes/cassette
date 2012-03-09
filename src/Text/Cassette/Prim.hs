@@ -69,6 +69,8 @@ shift x ~(K7 f f') = K7 (\k k' -> f (\k' s -> k (const k') s x) k') (\k k' s x -
 many :: PP a -> PP [a]
 many b = ((b <> many b) --> kcons) <|> knil
 
+-- We could implement lit in terms of many, satisfy, char and unshift, but
+-- don't, purely to reduce unnecessary choice points during parsing.
 lit :: String -> PP0
 lit x = K7 (\k k' -> maybe k' (k k') . stripPrefix x) (write0 x)
 
