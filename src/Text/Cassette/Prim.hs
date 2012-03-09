@@ -32,7 +32,7 @@ infixr 1 <|>
 (<|>) :: PP a -> PP a -> PP a
 K7 f f' <|> K7 g (g' :: RCont r a) =
   K7 (\k k' s -> f k (g k k' s) s)
-     (\k k' s x -> f' k (g' (k :: r -> String -> r) (k' :: a -> r) s) s x)
+     (\k k' s x -> f' k (g' k k' s) s x)
 
 empty :: PP0
 empty = K7 (\k k' s -> k') (\k k' s -> k')
