@@ -43,7 +43,7 @@ set :: String -> Cont0 r
 set s' = \k k' s -> k k' s'
 
 write :: (a -> String) -> RCont r a
-write f = \k k' s x -> k (k' x) (s ++ f x)
+write f = \k k' s x -> k (k' x) (f x ++ s)
 
 write0 :: String -> RCont0 r
 write0 x = \k k' s -> write id k (const k') s x
