@@ -71,12 +71,13 @@ many b = ((b <> many b) --> kcons) <|> knil
 lit :: String -> PP0
 lit x = K7 (\k k' -> maybe k' (k k') . stripPrefix x) (write0 x)
 
-char :: PP Char
-char = K7 (\k k' s -> if null s then k' else k (const k') (tail s) (head s))
-          (write (:[]))
-
-int :: PP Int
-int = K7 undefined undefined
+-- | Successful only if predicate holds.
+satisfy :: (Char -> Bool) -> PP Char
+satisfy p = K7 f g where
+  f k k' (x:xs) | p x = k (const k') xs x
+  f k k' _ = k'
+  g k k' s x | p x = write (:[]) k k' s x
+             | otherwise = k' x
 
 -- | Ornamentally select a side.
 play :: (K7 a b -> c) -> K7 a b -> c
