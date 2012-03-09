@@ -1,7 +1,7 @@
 {-# LANGUAGE NoMonomorphismRestriction, RankNTypes, ScopedTypeVariables #-}
 module Text.Cassette.Prim where
 
-import Data.List
+import Data.List (stripPrefix)
 
 
 data K7 a b = K7 { sideA :: a, sideB :: b }
