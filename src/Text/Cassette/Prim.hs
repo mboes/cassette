@@ -59,6 +59,12 @@ knil = K7 (\k k' s -> k (const k') s []) (\k k' s xs -> case xs of
                                                 [] -> k (k' xs) s
                                                 _ -> k' xs)
 
+unshift :: a -> PP a -> PP0
+unshift x ~(K7 f f') = K7 (\k k' -> f (\k' s x -> k (k' x) s) k') (\k k' s -> f' k (const k') s x)
+
+shift :: a -> PP0 -> PP a
+shift x ~(K7 f f') = K7 (\k k' -> f (\k' s -> k (const k') s x) k') (\k k' s x -> f' k (k' x) s)
+
 many :: PP a -> PP [a]
 many b = ((b <> many b) --> kcons) <|> knil
 
