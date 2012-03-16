@@ -7,7 +7,7 @@ import Prelude hiding (flip)
 
 data K7 a b c d = K7 { sideA :: a -> b, sideB :: d -> c }
 
-type SK7 a b = K7 a b b a
+newtype SK7 a b = SK7 { unSK7 :: K7 a b a b }
 
 infixr 9 <>
 
