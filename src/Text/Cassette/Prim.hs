@@ -2,7 +2,8 @@
 module Text.Cassette.Prim where
 
 import Data.List (stripPrefix)
-import Prelude hiding (flip)
+import Control.Category
+import Prelude hiding (flip, id, (.))
 
 
 data K7 a b c d = K7 { sideA :: a -> b, sideB :: d -> c }
@@ -15,6 +16,10 @@ infixr 9 <>
 (<>) :: K7 b c b' c' -> K7 a b a' b' -> K7 a c a' c'
 -- Irrefutable patterns to support definitions of combinators by coinduction.
 ~(K7 f f') <> ~(K7 g g') = K7 (f . g) (g' . f')
+
+instance Category SK7 where
+  id = SK7 $ K7 id id
+  SK7 csst1 . SK7 csst2 = SK7 $ csst1 <> csst2
 
 infixr 8 -->
 (-->) = (<>)
@@ -59,8 +64,6 @@ knil = K7 (\k k' s -> k (\s -> const (k' s)) s [])
           (\k k' s xs -> case xs of
               [] -> k (\s -> k' s xs) s
               _ -> k' s xs)
-
-idk = K7 id id
 
 many :: PP a -> PP [a]
 many b = ((b <> many b) --> kcons) <|> knil
