@@ -52,21 +52,21 @@ write f = \k k' s x -> k (\s -> k' s x) (f x ++ s)
 write0 :: String -> C r -> C r
 write0 x = \k k' s -> write id k (\s -> const (k' s)) s x
 
-kcons :: K7 (C ([a] -> r)) (C ([a] -> a -> r))
+consL :: K7 (C ([a] -> r)) (C ([a] -> a -> r))
             (C ([a] -> r')) (C ([a] -> a -> r'))
-kcons = K7 (\k k' s xs' x -> k (\s -> const (k' s xs' x)) s (x:xs'))
+consL = K7 (\k k' s xs' x -> k (\s -> const (k' s xs' x)) s (x:xs'))
            (\k k' s xs -> case xs of
                x:xs' -> k (\s _ _ -> k' s xs) s xs' x
                _ -> k' s xs)
 
-knil :: PP [a]
-knil = K7 (\k k' s -> k (\s -> const (k' s)) s [])
+nilL :: PP [a]
+nilL = K7 (\k k' s -> k (\s -> const (k' s)) s [])
           (\k k' s xs -> case xs of
               [] -> k (\s -> k' s xs) s
               _ -> k' s xs)
 
 many :: PP a -> PP [a]
-many b = ((b <> many b) --> kcons) <|> knil
+many b = ((b <> many b) --> consL) <|> nilL
 
 -- We could implement lit in terms of many, satisfy, char and unshift, but
 -- don't, purely to reduce unnecessary choice points during parsing.
