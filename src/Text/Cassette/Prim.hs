@@ -4,6 +4,7 @@ module Text.Cassette.Prim where
 import Data.List (stripPrefix)
 import Control.Category
 import Prelude hiding (flip, id, (.))
+import qualified Prelude
 
 
 data K7 a b c d = K7 { sideA :: a -> b, sideB :: d -> c }
@@ -22,7 +23,7 @@ instance Category SK7 where
   SK7 csst1 . SK7 csst2 = SK7 $ csst1 <> csst2
 
 infixr 8 -->
-(-->) = (<>)
+(-->) = Prelude.flip (<>)
 
 type C r = (String -> r) -> String -> r
 
@@ -61,7 +62,7 @@ nilL = K7 (\k k' s -> k (\s -> const (k' s)) s [])
               _ -> k' s xs)
 
 many :: PP a -> PP [a]
-many b = ((b <> many b) --> consL) <|> nilL
+many b = (consL --> b <> many b) <|> nilL
 
 -- We could implement lit in terms of many, satisfy, char and unshift, but
 -- don't, purely to reduce unnecessary choice points during parsing.
