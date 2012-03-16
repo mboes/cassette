@@ -37,6 +37,7 @@ K7 f f' <|> K7 g g' =
   K7 (\k k' s -> f k (\s' -> g k k' s) s)
      (\k k' s x -> f' k (\s' -> g' k k' s) s x)
 
+-- | Always fail.
 empty :: PP0
 empty = K7 (\k k' s -> k' s) (\k k' s -> k' s)
 
