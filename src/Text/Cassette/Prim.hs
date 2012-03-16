@@ -46,7 +46,7 @@ write :: (a -> String) -> C r -> C (a -> r)
 write f = \k k' s x -> k (\s -> k' s x) (f x ++ s)
 
 write0 :: String -> C r -> C r
-write0 x = \k k' s -> write id k (\s -> const (k' s)) s x
+write0 x = \k k' s -> write id k (\s _ -> k' s) s x
 
 unshift :: a -> PP a -> PP0
 unshift x ~(K7 f f') =
@@ -60,13 +60,13 @@ shift x ~(K7 f f') =
 
 consL :: K7 (C ([a] -> r)) (C ([a] -> a -> r))
             (C ([a] -> r')) (C ([a] -> a -> r'))
-consL = K7 (\k k' s xs' x -> k (\s -> const (k' s xs' x)) s (x:xs'))
+consL = K7 (\k k' s xs' x -> k (\s _ -> k' s xs' x) s (x:xs'))
            (\k k' s xs -> case xs of
                x:xs' -> k (\s _ _ -> k' s xs) s xs' x
                _ -> k' s xs)
 
 nilL :: PP [a]
-nilL = K7 (\k k' s -> k (\s -> const (k' s)) s [])
+nilL = K7 (\k k' s -> k (\s _ -> k' s) s [])
           (\k k' s xs -> case xs of
               [] -> k (\s -> k' s xs) s
               _ -> k' s xs)
