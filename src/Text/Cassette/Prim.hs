@@ -40,12 +40,6 @@ K7 f f' <|> K7 g g' =
 empty :: PP0
 empty = K7 (\k k' s -> k' s) (\k k' s -> k' s)
 
--- get :: Cont r String
--- get = \k k' s -> k (const k') s s
---
--- set :: String -> Cont0 r
--- set s' = \k k' s -> k k' s'
---
 write :: (a -> String) -> C r -> C (a -> r)
 write f = \k k' s x -> k (\s -> k' s x) (f x ++ s)
 
