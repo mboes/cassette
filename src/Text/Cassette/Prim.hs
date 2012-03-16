@@ -2,29 +2,27 @@
 module Text.Cassette.Prim where
 
 import Data.List (stripPrefix)
+import Prelude hiding (flip)
 
 
-data K7 a b = K7 { sideA :: a, sideB :: b }
+data K7 a b c d = K7 { sideA :: a -> b, sideB :: d -> c }
+
+type SK7 a b = K7 a b b a
 
 infixr 9 <>
 
 -- | Composing tapes.
-(<>) :: K7 (b -> c) (c' -> b') -> K7 (a -> b) (b' -> a') -> K7 (a -> c) (c' -> a')
+(<>) :: K7 b c b' c' -> K7 a b a' b' -> K7 a c a' c'
 -- Irrefutable patterns to support definitions of combinators by coinduction.
 ~(K7 f f') <> ~(K7 g g') = K7 (f . g) (g' . f')
 
 infixr 8 -->
 (-->) = (<>)
 
-type Cont r a  = ((String -> a -> r) -> String -> a -> r) -> ((String -> r) -> String -> r)
-type RCont r a = ((String -> r) -> String -> r) -> ((String -> a -> r) -> String -> a -> r)
+type C r = (String -> r) -> String -> r
 
-type PP a = forall r r'. K7 (Cont r a) (RCont r' a)
-
-type Cont0 r  = ((String -> r) -> String -> r) -> ((String -> r) -> String -> r)
-type RCont0 r = Cont0 r
-
-type PP0 = forall r r'. K7 (Cont0 r) (RCont0 r')
+type PP a = forall r r'. K7 (C (a -> r)) (C r) (C (a -> r')) (C r')
+type PP0  = forall r r'. K7 (C r) (C r) (C r') (C r')
 
 -- Use same priority and associativity as in Parsec.
 infixr 1 <|>
@@ -43,76 +41,53 @@ empty = K7 (\k k' s -> k' s) (\k k' s -> k' s)
 -- set :: String -> Cont0 r
 -- set s' = \k k' s -> k k' s'
 --
--- write :: (a -> String) -> RCont r a
--- write f = \k k' s x -> k (k' x) (f x ++ s)
---
--- write0 :: String -> RCont0 r
--- write0 x = \k k' s -> write id k (const k') s x
---
--- kcons :: K7 ((([a] -> r) -> String -> [a] -> r) -> ([a] -> a -> r) -> String -> [a] -> a -> r)
---              ((([a] -> a -> r') -> String -> [a] -> a -> r') -> ([a] -> r') -> String -> [a] -> r')
--- kcons = K7 (\k k' s xs' x -> k (const (k' xs' x)) s (x:xs'))
---            (\k k' s xs -> case xs of
---                x:xs' -> k (\_ _ -> k' xs) s xs' x
---                _ -> k' xs)
---
--- knil :: PP [a]
--- knil = K7 (\k k' s -> k (const k') s [])
---           (\k k' s xs -> case xs of
---               [] -> k (k' xs) s
---               _ -> k' xs)
---
--- idk = K7 id id
---
--- -- infixr <$, $>
--- --
--- -- x <$ pp = unshift x pp
--- --
--- -- x $> pp = shift x pp
--- --
--- -- kcons' = K7
--- --              (\xs -> case xs of
--- --                  x:xs' -> sideB (xs $> x <$ xs' <$ idk)
--- --                  _ -> sideB (xs $> error "wrong constructor"))
---
--- -- run $ reset ((shift (\k -> ret (\x xs -> k (x:xs)))))
--- -- a -> [a] -> [a]
---
--- unshiftA f = (\k k' -> f (\k' s x -> k (k' x) s) k')
--- unshiftB x f' = (\k k' s -> f' k (const k') s x)
---
--- shiftA x f = (\k k' -> f (\k' s -> k (const k') s x) k')
--- shiftB f' = (\k k' s x -> f' k (k' x) s)
---
---
--- --unshift :: a -> PP a -> PP0
--- unshift x ~(K7 f f') = K7 (\k k' -> f (\k' s x -> k (k' x) s) k') (\k k' s -> f' k (const k') s x)
---
--- --shift :: a -> PP0 -> PP a
--- shift x ~(K7 f f') = K7 (\k k' -> f (\k' s -> k (const k') s x) k') (\k k' s x -> f' k (k' x) s)
---
--- many :: PP a -> PP [a]
--- many b = ((b <> many b) --> kcons) <|> knil
---
--- -- We could implement lit in terms of many, satisfy, char and unshift, but
--- -- don't, purely to reduce unnecessary choice points during parsing.
--- lit :: String -> PP0
--- lit x = K7 (\k k' -> maybe k' (k k') . stripPrefix x) (write0 x)
+write :: (a -> String) -> C r -> C (a -> r)
+write f = \k k' s x -> k (\s -> k' s x) (f x ++ s)
+
+write0 :: String -> C r -> C r
+write0 x = \k k' s -> write id k (\s -> const (k' s)) s x
+
+kcons :: K7 (C ([a] -> r)) (C ([a] -> a -> r))
+            (C ([a] -> r')) (C ([a] -> a -> r'))
+kcons = K7 (\k k' s xs' x -> k (\s -> const (k' s xs' x)) s (x:xs'))
+           (\k k' s xs -> case xs of
+               x:xs' -> k (\s _ _ -> k' s xs) s xs' x
+               _ -> k' s xs)
+
+knil :: PP [a]
+knil = K7 (\k k' s -> k (\s -> const (k' s)) s [])
+          (\k k' s xs -> case xs of
+              [] -> k (\s -> k' s xs) s
+              _ -> k' s xs)
+
+idk = K7 id id
+
+many :: PP a -> PP [a]
+many b = ((b <> many b) --> kcons) <|> knil
+
+-- We could implement lit in terms of many, satisfy, char and unshift, but
+-- don't, purely to reduce unnecessary choice points during parsing.
+lit :: String -> PP0
+lit x = K7 (\k k' s -> maybe (k' s) (k k') $ stripPrefix x s) (write0 x)
 
 -- | Successful only if predicate holds.
 satisfy :: (Char -> Bool) -> PP Char
 satisfy p = K7 f g where
   f k k' (x:xs) | p x = k (\s _ -> k' s) xs x
   f k k' s = k' s
-  g k k' s x | p x = k (k' s x) (x:s)
+  g k k' s x | p x = k (\s -> k' s x) (x:s)
              | otherwise = k' s x
 
--- | Ornamentally select a side.
-play :: (K7 a b -> c) -> K7 a b -> c
-play side csst = side csst
+-- | Select the A-side.
+play :: K7 a b c d -> a -> b
+play csst = sideA csst
+
+-- | Switch the A-side and B-side around.
+flip :: K7 a b c d -> K7 d c b a
+flip (K7 f g) = K7 g f
 
 parse :: PP a -> String -> Maybe a
-parse csst = play sideA csst (\_ _ x -> Just x) Nothing
+parse csst = play csst (\_ _ x -> Just x) (const Nothing)
 
 pretty :: PP a -> a -> Maybe String
-pretty csst = play sideB csst (const Just) (const Nothing) ""
+pretty csst = play (flip csst) (const Just) (\_ _ -> Nothing) ""
