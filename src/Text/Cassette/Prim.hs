@@ -30,6 +30,20 @@ type C r = (String -> r) -> String -> r
 type PP a = forall r r'. K7 (C (a -> r)) (C r) (C (a -> r')) (C r')
 type PP0  = forall r r'. K7 (C r) (C r) (C r') (C r')
 
+-- | Select the A-side.
+play :: K7 a b c d -> a -> b
+play csst = sideA csst
+
+-- | Switch the A-side and B-side around.
+flip :: K7 a b c d -> K7 d c b a
+flip (K7 f g) = K7 g f
+
+parse :: PP a -> String -> Maybe a
+parse csst = play csst (\_ _ x -> Just x) (const Nothing)
+
+pretty :: PP a -> a -> Maybe String
+pretty csst = play (flip csst) (const Just) (\_ _ -> Nothing) ""
+
 -- Use same priority and associativity as in Parsec.
 infixr 1 <|>
 
@@ -86,17 +100,3 @@ satisfy p = K7 f g where
   f k k' s = k' s
   g k k' s x | p x = k (\s -> k' s x) (x:s)
              | otherwise = k' s x
-
--- | Select the A-side.
-play :: K7 a b c d -> a -> b
-play csst = sideA csst
-
--- | Switch the A-side and B-side around.
-flip :: K7 a b c d -> K7 d c b a
-flip (K7 f g) = K7 g f
-
-parse :: PP a -> String -> Maybe a
-parse csst = play csst (\_ _ x -> Just x) (const Nothing)
-
-pretty :: PP a -> a -> Maybe String
-pretty csst = play (flip csst) (const Just) (\_ _ -> Nothing) ""
