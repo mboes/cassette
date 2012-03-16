@@ -48,6 +48,16 @@ write f = \k k' s x -> k (\s -> k' s x) (f x ++ s)
 write0 :: String -> C r -> C r
 write0 x = \k k' s -> write id k (\s -> const (k' s)) s x
 
+unshift :: a -> PP a -> PP0
+unshift x ~(K7 f f') =
+  K7 (\k k' -> f (\k' s x -> k (\s -> k' s x) s) k')
+     (\k k' s -> f' k (\s _ -> k' s) s x)
+
+shift :: a -> PP0 -> PP a
+shift x ~(K7 f f') =
+  K7 (\k k' -> f (\k' s -> k (\s _ -> k' s) s x) k')
+     (\k k' s x -> f' k (\s -> k' s x) s)
+
 consL :: K7 (C ([a] -> r)) (C ([a] -> a -> r))
             (C ([a] -> r')) (C ([a] -> a -> r'))
 consL = K7 (\k k' s xs' x -> k (\s -> const (k' s xs' x)) s (x:xs'))
