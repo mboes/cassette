@@ -100,3 +100,7 @@ satisfy p = K7 f g where
   f k k' s = k' s
   g k k' s x | p x = k (\s -> k' s x) (x:s)
              | otherwise = k' s x
+
+-- | Parse/print without consuming/producing any input.
+lookAhead :: PP a -> PP a
+lookAhead (K7 f f') = K7 (\k k' s -> f (\k' _ -> k k' s) k' s) (\k k' s -> f' (\k' _ -> k k' s) k' s)
