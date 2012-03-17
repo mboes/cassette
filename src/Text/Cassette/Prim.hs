@@ -10,7 +10,7 @@ import qualified Prelude
 
 data K7 a b c d = K7 { sideA :: a -> b, sideB :: d -> c }
 
-newtype SK7 a b = SK7 { unSK7 :: K7 a b a b }
+newtype Sym a b = Sym { unSym :: K7 a b a b }
 
 infixr 9 <>
 
@@ -20,8 +20,8 @@ infixr 9 <>
 ~(K7 f f') <> ~(K7 g g') = K7 (f . g) (g' . f')
 
 instance Category SK7 where
-  id = SK7 $ K7 id id
-  SK7 csst1 . SK7 csst2 = SK7 $ csst1 <> csst2
+  id = Sym (K7 id id)
+  Sym csst1 . Sym csst2 = Sym (csst1 <> csst2)
 
 infixr 8 -->
 (-->) = Prelude.flip (<>)
