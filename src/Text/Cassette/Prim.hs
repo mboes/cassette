@@ -57,6 +57,10 @@ K7 f f' <|> K7 g g' =
 empty :: PP0
 empty = K7 (\k k' s -> k' s) (\k k' s -> k' s)
 
+-- | Do nothing.
+nothing :: PP0
+nothing = K7 id id
+
 write :: (a -> String) -> C r -> C (a -> r)
 write f = \k k' s x -> k (\s -> k' s x) (f x ++ s)
 
