@@ -19,7 +19,7 @@ infixr 9 <>
 -- Irrefutable patterns to support definitions of combinators by coinduction.
 ~(K7 f f') <> ~(K7 g g') = K7 (f . g) (g' . f')
 
-instance Category SK7 where
+instance Category Sym where
   id = Sym (K7 id id)
   Sym csst1 . Sym csst2 = Sym (csst1 <> csst2)
 
