@@ -1,6 +1,7 @@
 {-# LANGUAGE RankNTypes #-}
 module Text.Cassette.Prim where
 
+import Text.Cassette.Leads
 import Data.List (stripPrefix)
 import Control.Category
 import Prelude hiding (flip, id, (.))
@@ -71,19 +72,6 @@ shift :: a -> PP0 -> PP a
 shift x ~(K7 f f') =
   K7 (\k k' -> f (\k' s -> k (\s _ -> k' s) s x) k')
      (\k k' s x -> f' k (\s -> k' s x) s)
-
-consL :: K7 (C ([a] -> r)) (C ([a] -> a -> r))
-            (C ([a] -> r')) (C ([a] -> a -> r'))
-consL = K7 (\k k' s xs' x -> k (\s _ -> k' s xs' x) s (x:xs'))
-           (\k k' s xs -> case xs of
-               x:xs' -> k (\s _ _ -> k' s xs) s xs' x
-               _ -> k' s xs)
-
-nilL :: PP [a]
-nilL = K7 (\k k' s -> k (\s _ -> k' s) s [])
-          (\k k' s xs -> case xs of
-              [] -> k (\s -> k' s xs) s
-              _ -> k' s xs)
 
 many :: PP a -> PP [a]
 many b = (consL --> b <> many b) <|> nilL
