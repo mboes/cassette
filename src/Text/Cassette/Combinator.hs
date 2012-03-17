@@ -1,31 +1,32 @@
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RankNTypes, ImpredicativeTypes #-}
 module Text.Cassette.Combinator where
 
 import Text.Cassette.Prim
+import Text.Cassette.Leads
 import Text.Cassette.Char
 
 
--- choice :: [PP a] -> PP a
--- choice = foldr1 (<|>)
---
--- count :: Int -> PP a -> PP [a]
--- count 0 _ = knil
--- count n p = p <> count (n - 1) p --> kcons
---
--- option :: a -> PP a -> PP a
--- option def p = p <|> shift def id
---
--- optionMaybe :: PP a -> PP (Maybe a)
--- optionMaybe p = p <|> shift Nothing id
---
--- optional :: PP a -> PP0
--- optional p = unshift [] (count 1 p <|> count 0 p)
---
--- skipMany1 :: PP a -> PP0
--- skipMany1 = undefined
+choice :: [PP a] -> PP a
+choice = foldr1 (<|>)
+
+count :: Int -> PP a -> PP [a]
+count 0 _ = nilL
+count n p = consL --> p <> count (n - 1) p
+
+option :: a -> PP a -> PP a
+option def p = p <|> shift def nothing
+
+optionMaybe :: PP a -> PP (Maybe a)
+optionMaybe p = justL --> p <|> nothingL
+
+optional :: PP a -> PP0
+optional p = unshift [] (count 1 p <|> count 0 p)
+
+skipMany1 :: PP a -> PP0
+skipMany1 = unshift [] . many1
 
 many1 :: PP a -> PP [a]
-many1 p = p <> many p --> kcons
+many1 p = consL --> p <> many p
 
 -- sepBy :: PP a -> PP sep -> PP [a]
 -- sepBy1 :: PP a -> PP sep -> PP [a]
@@ -42,14 +43,14 @@ many1 p = p <> many p --> kcons
 -- manyTill :: PP a -> PP end -> PP [a]
 -- lookAhead :: PP a -> PP a
 
-int :: PP Int
-int = many1 digit --> K7 (\k k' s -> k (k' . show) s . read) (\k k' s -> k (k' . read) s . show)
-
-pair = K7 (\k k' s x2 x1 -> k (const (k' x2 x1)) s (x1, x2))
-          (\k k' s t@(x1, x2) -> k (\_ _ -> k' t) s x2 x1)
-
-triple = K7 (\k k' s x3 x2 x1 -> k (const (k' x3 x2 x1)) s (x1, x2, x3))
-            (\k k' s t@(x1, x2, x3) -> k (\_ _ _ -> k' t) s x3 x2 x1)
-
-quadruple = K7 (\k k' s x4 x3 x2 x1 -> k (const (k' x4 x3 x2 x1)) s (x1, x2, x3, x4))
-               (\k k' s t@(x1, x2, x3, x4) -> k (\_ _ _ _ -> k' t) s x4 x3 x2 x1)
+-- int :: PP Int
+-- int = many1 digit --> K7 (\k k' s -> k (k' . show) s . read) (\k k' s -> k (k' . read) s . show)
+--
+-- pair = K7 (\k k' s x2 x1 -> k (const (k' x2 x1)) s (x1, x2))
+--           (\k k' s t@(x1, x2) -> k (\_ _ -> k' t) s x2 x1)
+--
+-- triple = K7 (\k k' s x3 x2 x1 -> k (const (k' x3 x2 x1)) s (x1, x2, x3))
+--             (\k k' s t@(x1, x2, x3) -> k (\_ _ _ -> k' t) s x3 x2 x1)
+--
+-- quadruple = K7 (\k k' s x4 x3 x2 x1 -> k (const (k' x4 x3 x2 x1)) s (x1, x2, x3, x4))
+--                (\k k' s t@(x1, x2, x3, x4) -> k (\_ _ _ _ -> k' t) s x4 x3 x2 x1)
