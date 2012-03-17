@@ -1,4 +1,4 @@
-{-# LANGUAGE NoMonomorphismRestriction, RankNTypes, ScopedTypeVariables #-}
+{-# LANGUAGE RankNTypes #-}
 module Text.Cassette.Prim where
 
 import Data.List (stripPrefix)
