@@ -57,8 +57,3 @@ notFollowedBy x xP = unshift x $ xP <> empty <|> shift x nothing
 
 manyTill :: PP a -> PP0 -> PP [a]
 manyTill xP endP = nilL --> endP <|> consL --> xP <> manyTill xP endP
-
-
--- int :: PP Int
--- int = many1 digit --> K7 (\k k' s -> k (k' . show) s . read) (\k k' s -> k (k' . read) s . show)
---
