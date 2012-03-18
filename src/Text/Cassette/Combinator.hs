@@ -40,23 +40,6 @@ sepBy px psep = sepBy1 px psep <|> nilL
 sepBy1 :: PP a -> PP0 -> PP [a]
 sepBy1 px psep = consL --> px <> many (psep <> px)
 
-catanal :: BinL a b a -> BinL a [b] a
-catanal (K7 f f') = K7 g (g' []) where
-  g k k' s xs@[]      z = k (\s _ -> k' s xs z) s z
-  g k k' s xs@(x:xs') z =
-    f (\k' s z -> g k (\s _ _ -> k' s z) s xs' z) (\s _ _ -> k' s xs z) s x z
-  g' xs' k k' s z =
-    f' (\k' s x z -> g' (x:xs') k (\s _ -> k' s x z) s z) (\s _ -> k (\s _ _ -> k' s z) s xs' z) s z
-
-catanar :: BinL a b b -> BinL b [a] b
-catanar (K7 f f') = K7 g g' where
-  g k k' s xs@[]      z = k (\s _ -> k' s xs z) s z
-  g k k' s xs@(x:xs') z =
-    g (\k' s z -> f k (\s _ _ -> k' s z) s z x) (\s _ _ -> k' s xs z) s xs' z
-  g' k k' s z =
-    f' (\k' s z x -> g' (\k' s xs' z -> k k' s (x:xs') z) (\s _ -> k' s z x) s z)
-       (\s _ -> k (\s _ _ -> k' s z) s [] z) s z
-
 chainl :: PP0 -> BinL a a a -> PP a -> a -> PP a
 chainl opP opL xP dflt = chainl1 opP opL xP <|> shift dflt nothing
 
