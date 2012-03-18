@@ -6,7 +6,8 @@ import Text.Cassette.Leads
 
 
 choice :: [PP a] -> PP a
-choice = foldr1 (<|>)
+choice [p] = p
+choice (p:ps) = p <|> choice ps
 
 count :: Int -> PP a -> PP [a]
 count 0 _ = nilL
