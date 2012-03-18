@@ -22,8 +22,14 @@ optionMaybe p = justL --> p <|> nothingL
 optional :: PP a -> PP0
 optional p = unshift [] (count 1 p <|> count 0 p)
 
+skipMany :: PP a -> PP0
+skipMany p = unshift [] $ many p
+
 skipMany1 :: PP a -> PP0
-skipMany1 = unshift [] . many1
+skipMany1 p = unshift [] $ many1 p
+
+many :: PP a -> PP [a]
+many p = many1 p <|> nilL
 
 many1 :: PP a -> PP [a]
 many1 p = consL --> p <> many p

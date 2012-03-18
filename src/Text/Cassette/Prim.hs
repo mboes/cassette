@@ -77,9 +77,6 @@ shift x ~(K7 f f') =
   K7 (\k k' -> f (\k' s -> k (\s _ -> k' s) s x) k')
      (\k k' s x -> f' k (\s -> k' s x) s)
 
-many :: PP a -> PP [a]
-many b = (consL --> b <> many b) <|> nilL
-
 -- We could implement lit in terms of many, satisfy, char and unshift, but
 -- don't, purely to reduce unnecessary choice points during parsing.
 lit :: String -> PP0
