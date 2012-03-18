@@ -16,14 +16,11 @@ type BinL a b c =
   forall r r'. K7 (C (c -> r))  (C (b -> a -> r))
                   (C (c -> r')) (C (b -> a -> r'))
 
-catanal :: BinL a b a -> BinL a [b] a
-catanal (K7 f f') = K7 g (g' []) where
-  g k k' s xs@[]      z = k (\s _ -> k' s xs z) s z
-  g k k' s xs@(x:xs') z =
-    f (\k' s z -> g k (\s _ _ -> k' s z) s xs' z) (\s _ _ -> k' s xs z) s x z
-  g' xs' k k' s z =
-    f' (\k' s x z -> g' (x:xs') k (\s _ -> k' s x z) s z) (\s _ -> k (\s _ _ -> k' s z) s xs' z) s z
-
+-- | Iterates a one step construction function (resp. deconstruction)
+-- function, i.e. a lead, thus obtaining a right fold (resp. unfold). The
+-- resulting lead is a catamorphism on one side and an anamorpism on the
+-- other, hence the name. The type of this function is the same as that of
+-- 'foldr', lifted to cassettes.
 catanar :: BinL a b b -> BinL b [a] b
 catanar (K7 f f') = K7 g g' where
   g k k' s xs@[]      z = k (\s _ -> k' s xs z) s z
@@ -32,6 +29,19 @@ catanar (K7 f f') = K7 g g' where
   g' k k' s z =
     f' (\k' s z x -> g' (\k' s xs' z -> k k' s (x:xs') z) (\s _ -> k' s z x) s z)
        (\s _ -> k (\s _ _ -> k' s z) s [] z) s z
+
+-- | Iterates a one step construction function (resp. deconstruction)
+-- function, i.e. a lead, thus obtaining a left fold (resp. unfold). The
+-- resulting lead is a catamorphism on one side and an anamorpism on the
+-- other, hence the name. The type of this function is the same as that of
+-- 'foldl', lifted to cassettes.
+catanal :: BinL a b a -> BinL a [b] a
+catanal (K7 f f') = K7 g (g' []) where
+  g k k' s xs@[]      z = k (\s _ -> k' s xs z) s z
+  g k k' s xs@(x:xs') z =
+    f (\k' s z -> g k (\s _ _ -> k' s z) s xs' z) (\s _ _ -> k' s xs z) s x z
+  g' xs' k k' s z =
+    f' (\k' s x z -> g' (x:xs') k (\s _ -> k' s x z) s z) (\s _ -> k (\s _ _ -> k' s z) s xs' z) s z
 
 consL :: BinL a [a] [a]
 consL = K7 (\k k' s xs' x -> k (\s _ -> k' s xs' x) s (x:xs'))
