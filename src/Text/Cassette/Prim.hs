@@ -105,10 +105,10 @@ write0 :: String -> C r -> C r
 write0 x = \k k' s -> write id k (\s _ -> k' s) s x
 
 -- | Strip/add the given string from/to the output string.
-lit :: String -> PP0
--- We could implement lit in terms of many, satisfy, char and unshift, but
--- don't, purely to reduce unnecessary choice points during parsing.
-lit x = K7 (\k k' s -> maybe (k' s) (k k') $ stripPrefix x s) (write0 x)
+string :: String -> PP0
+-- We could implement 'string' in terms of many, satisfy, char and unshift,
+-- but don't, purely to reduce unnecessary choice points during parsing.
+string x = K7 (\k k' s -> maybe (k' s) (k k') $ stripPrefix x s) (write0 x)
 
 -- | Successful only if predicate holds.
 satisfy :: (Char -> Bool) -> PP Char
