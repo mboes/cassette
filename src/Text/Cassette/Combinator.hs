@@ -52,8 +52,12 @@ chainr opP opL xP dflt = chainr1 opP opL xP <|> shift dflt nothing
 chainr1 :: PP0 -> BinL a a a -> PP a -> PP a
 chainr1 opP opL xP = catanar opL --> xP <> many (opP <> xP)
 
--- notFollowedBy :: a -> PP a -> PP0
--- manyTill :: PP a -> PP end -> PP [a]
+notFollowedBy :: a -> PP a -> PP0
+notFollowedBy x xP = unshift x $ xP <> empty <|> shift x nothing
+
+manyTill :: PP a -> PP0 -> PP [a]
+manyTill xP endP = nilL --> endP <|> consL --> xP <> manyTill xP endP
+
 
 -- int :: PP Int
 -- int = many1 digit --> K7 (\k k' s -> k (k' . show) s . read) (\k k' s -> k (k' . read) s . show)
