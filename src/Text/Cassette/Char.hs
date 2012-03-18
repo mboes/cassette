@@ -5,9 +5,14 @@ import Text.Cassette.Combinator
 import Data.Char
 
 
+-- | Succeeds if the current character is in the supplied list of characters.
+-- See also 'satisfy'.
+--
+-- > vowel = oneOf "aeiou"
 oneOf :: [Char] -> PP Char
 oneOf xs = satisfy (`elem` xs)
 
+-- | Dual of 'oneOf'.
 noneOf :: [Char] -> PP Char
 noneOf xs = satisfy (not . (`elem` xs))
 
@@ -36,9 +41,12 @@ optSpace = unshift " " $ many (satisfy isSpace)
 sepSpace :: PP0
 sepSpace = lit " " <> skipSpace
 
-newline, tab :: PP0
-
+-- | Parses a newline character (\'\\n\').
+newline :: PP0
 newline = char '\n'
+
+-- | Parses a tab character (\'\\t\').
+tab :: PP0
 tab = char '\t'
 
 upper, lower, alphaNum, letter, digit, hexDigit, octDigit, anyChar :: PP Char
@@ -50,7 +58,10 @@ letter = satisfy isAlpha
 digit = satisfy isDigit
 hexDigit = satisfy isHexDigit
 octDigit = satisfy isOctDigit
+
+-- | Any character.
 anyChar = satisfy (const True)
 
+-- | A specific character.
 char :: Char -> PP0
 char x = lit [x]
