@@ -34,20 +34,43 @@ many p = many1 p <|> nilL
 many1 :: PP a -> PP [a]
 many1 p = consL --> p <> many p
 
--- sepBy :: PP a -> PP sep -> PP [a]
--- sepBy1 :: PP a -> PP sep -> PP [a]
--- endBy :: PP a -> PP sep -> PP [a]
--- endBy1 :: PP a -> PP sep -> PP [a]
--- sepEndBy :: PP a -> PP sep -> PP [a]
--- sepEndBy1 :: PP a -> PP sep -> PP [a]
--- chainl :: PP a -> PP (a -> a -> a) -> a -> PP a
--- chainl1 :: PP a -> PP (a -> a -> a) -> PP a
--- chainr :: PP a -> PP (a -> a -> a) -> a -> PP a
--- chainr1 :: PP a -> PP (a -> a -> a) -> PP a
--- eof :: PP0
+sepBy :: PP a -> PP0 -> PP [a]
+sepBy px psep = sepBy1 px psep <|> nilL
+
+sepBy1 :: PP a -> PP0 -> PP [a]
+sepBy1 px psep = consL --> px <> many (psep <> px)
+
+catanal :: BinL a b a -> BinL a [b] a
+catanal (K7 f f') = K7 g (g' []) where
+  g k k' s xs@[]      z = k (\s _ -> k' s xs z) s z
+  g k k' s xs@(x:xs') z =
+    f (\k' s z -> g k (\s _ _ -> k' s z) s xs' z) (\s _ _ -> k' s xs z) s x z
+  g' xs' k k' s z =
+    f' (\k' s x z -> g' (x:xs') k (\s _ -> k' s x z) s z) (\s _ -> k (\s _ _ -> k' s z) s xs' z) s z
+
+catanar :: BinL a b b -> BinL b [a] b
+catanar (K7 f f') = K7 g g' where
+  g k k' s xs@[]      z = k (\s _ -> k' s xs z) s z
+  g k k' s xs@(x:xs') z =
+    g (\k' s z -> f k (\s _ _ -> k' s z) s z x) (\s _ _ -> k' s xs z) s xs' z
+  g' k k' s z =
+    f' (\k' s z x -> g' (\k' s xs' z -> k k' s (x:xs') z) (\s _ -> k' s z x) s z)
+       (\s _ -> k (\s _ _ -> k' s z) s [] z) s z
+
+chainl :: PP0 -> BinL a a a -> PP a -> a -> PP a
+chainl opP opL xP dflt = chainl1 opP opL xP <|> shift dflt nothing
+
+chainl1 :: PP0 -> BinL a a a -> PP a -> PP a
+chainl1 opP opL xP = catanal opL --> xP <> many (opP <> xP)
+
+chainr :: PP0 -> BinL a a a -> PP a -> a -> PP a
+chainr opP opL xP dflt = chainr1 opP opL xP <|> shift dflt nothing
+
+chainr1 :: PP0 -> BinL a a a -> PP a -> PP a
+chainr1 opP opL xP = catanal opL --> xP <> many (opP <> xP)
+
 -- notFollowedBy :: a -> PP a -> PP0
 -- manyTill :: PP a -> PP end -> PP [a]
--- lookAhead :: PP a -> PP a
 
 -- int :: PP Int
 -- int = many1 digit --> K7 (\k k' s -> k (k' . show) s . read) (\k k' s -> k (k' . read) s . show)
