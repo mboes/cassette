@@ -16,6 +16,11 @@ type BinL a b c =
   forall r r'. K7 (C (c -> r))  (C (b -> a -> r))
                   (C (c -> r')) (C (b -> a -> r'))
 
+liftL :: Sym a b -> UnL a b
+liftL (Sym (K7 f f')) =
+  K7 (\k k' s x -> k (\s _ -> k' s x) s (f x))
+     (\k k' s y -> k (\s _ -> k' s y) s (f' y))
+
 -- | Iterates a one step construction function (resp. deconstruction)
 -- function, i.e. a lead, thus obtaining a right fold (resp. unfold). The
 -- resulting lead is a catamorphism on one side and an anamorpism on the
