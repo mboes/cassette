@@ -1,6 +1,7 @@
 module Text.Cassette.Char where
 
 import Text.Cassette.Prim
+import Text.Cassette.Combinator
 import Data.Char
 
 
