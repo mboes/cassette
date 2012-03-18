@@ -92,3 +92,8 @@ satisfy p = K7 f g where
 -- | Parse/print without consuming/producing any input.
 lookAhead :: PP a -> PP a
 lookAhead (K7 f f') = K7 (\k k' s -> f (\k' _ -> k k' s) k' s) (\k k' s -> f' (\k' _ -> k k' s) k' s)
+
+eof :: PP0
+eof = K7 isEmpty isEmpty where
+  isEmpty k k' "" = k k' ""
+  isEmpty k k' s  = k' s
