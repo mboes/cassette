@@ -14,7 +14,7 @@ count 0 _ = nilL
 count n p = consL --> p <> count (n - 1) p
 
 option :: a -> PP a -> PP a
-option def p = p <|> shift def nothing
+option x p = p <|> shift x nothing
 
 optionMaybe :: PP a -> PP (Maybe a)
 optionMaybe p = justL --> p <|> nothingL
