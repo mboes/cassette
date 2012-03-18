@@ -11,6 +11,10 @@ oneOf xs = satisfy (`elem` xs)
 noneOf :: [Char] -> PP Char
 noneOf xs = satisfy (not . (`elem` xs))
 
+-- | The 'satisfy' combinator, unshifted.
+skip :: (Char -> Bool) -> Char -> PP0
+skip p x = unshift x $ satisfy p
+
 -- The next three combinators take their specification from the
 -- invertible-syntax package.
 
