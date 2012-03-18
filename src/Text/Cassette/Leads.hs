@@ -1,6 +1,6 @@
 module Text.Cassette.Leads where
 
-import {-# SOURCE #-} Text.Cassette.Prim
+import Text.Cassette.Prim
 
 
 consL :: K7 (C ([a] -> r)) (C ([a] -> a -> r))

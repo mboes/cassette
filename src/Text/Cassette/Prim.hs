@@ -1,7 +1,6 @@
 {-# LANGUAGE RankNTypes #-}
 module Text.Cassette.Prim where
 
-import Text.Cassette.Leads
 import Data.List (stripPrefix)
 import Control.Category
 import Prelude hiding (flip, id, (.))
