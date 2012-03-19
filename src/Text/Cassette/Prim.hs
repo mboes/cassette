@@ -88,15 +88,6 @@ empty = K7 (\k k' s -> k' s) (\k k' s -> k' s)
 nothing :: PP0
 nothing = K7 id id
 
--- | Turn the given cassette into a pure string transformer. That is, return a
--- cassette that does not produce an output or consume an input.
--- @unshift x p@ throws away the output of @p@ on the parsing side,
--- and on the printing side sets the input to @x@.
-unshift :: a -> PP a -> PP0
-unshift x ~(K7 f f') =
-  K7 (\k k' -> f (\k' s x -> k (\s -> k' s x) s) k')
-     (\k k' s -> f' k (\s _ -> k' s) s x)
-
 -- | Turn the given pure transformer into a parsing/printing pair. That is,
 -- return a cassette that produces and output on the one side, and consumes an
 -- input on the other, in addition to the string transformations of the given
@@ -106,6 +97,15 @@ shift :: a -> PP0 -> PP a
 shift x ~(K7 f f') =
   K7 (\k k' -> f (\k' s -> k (\s _ -> k' s) s x) k')
      (\k k' s x -> f' k (\s -> k' s x) s)
+
+-- | Turn the given cassette into a pure string transformer. That is, return a
+-- cassette that does not produce an output or consume an input. @unshift x p@
+-- throws away the output of @p@ on the parsing side, and on the printing side
+-- sets the input to @x@.
+unshift :: a -> PP a -> PP0
+unshift x ~(K7 f f') =
+  K7 (\k k' -> f (\k' s x -> k (\s -> k' s x) s) k')
+     (\k k' s -> f' k (\s _ -> k' s) s x)
 
 write :: (a -> String) -> C r -> C (a -> r)
 write f = \k k' s x -> k (\s -> k' s x) (f x ++ s)
