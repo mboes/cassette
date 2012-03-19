@@ -18,7 +18,8 @@ library
   Hs-Source-Dirs: src
   Build-Depends:  base >= 4 && < 5, template-haskell >= 2.4
   Default-Language:     Haskell2010
-  Exposed-Modules:      Text.Cassette.Prim
+  Exposed-Modules:      Text.Cassette
+                        Text.Cassette.Prim
                         Text.Cassette.Lead
                         Text.Cassette.Combinator
                         Text.Cassette.Char
