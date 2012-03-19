@@ -1,5 +1,5 @@
 {-# LANGUAGE RankNTypes #-}
-module Text.Cassette.Leads where
+module Text.Cassette.Lead where
 
 import Text.Cassette.Prim
 

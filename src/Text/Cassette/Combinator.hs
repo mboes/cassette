@@ -2,7 +2,7 @@
 module Text.Cassette.Combinator where
 
 import Text.Cassette.Prim
-import Text.Cassette.Leads
+import Text.Cassette.Lead
 
 
 -- | Applies each cassette in the supplied list in order, until one of them

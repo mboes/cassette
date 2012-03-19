@@ -2,7 +2,7 @@
 module Text.Cassette.Number where
 
 import Text.Cassette.Prim
-import Text.Cassette.Leads
+import Text.Cassette.Lead
 import Text.Cassette.Combinator
 import Text.Cassette.Char
 
