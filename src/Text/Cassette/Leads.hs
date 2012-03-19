@@ -16,6 +16,7 @@ type BinL a b c =
   forall r r'. K7 (C (c -> r))  (C (b -> a -> r))
                   (C (c -> r')) (C (b -> a -> r'))
 
+-- | Lift a pair of symmetric functions to a lead.
 liftL :: Sym a b -> UnL a b
 liftL (Sym (K7 f f')) =
   K7 (\k k' s x -> k (\s _ -> k' s x) s (f x))
