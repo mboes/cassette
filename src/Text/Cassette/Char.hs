@@ -39,7 +39,7 @@ optSpace = unshift " " $ many (satisfy isSpace)
 -- occur. It requires one or more space characters while parsing,
 -- and produces a single space character while printing.
 sepSpace :: PP0
-sepSpace = lit " " <> skipSpace
+sepSpace = string " " <> skipSpace
 
 -- | Parses a newline character (\'\\n\').
 newline :: PP0
@@ -64,4 +64,4 @@ anyChar = satisfy (const True)
 
 -- | A specific character.
 char :: Char -> PP0
-char x = lit [x]
+char x = string [x]
