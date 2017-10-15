@@ -4,7 +4,6 @@ import Text.Cassette.Prim
 import Text.Cassette.Combinator
 import Data.Char
 
-
 -- | Succeeds if the current character is in the supplied list of characters.
 -- See also 'satisfy'.
 --

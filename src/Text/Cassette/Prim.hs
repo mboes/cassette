@@ -1,20 +1,31 @@
 {-# LANGUAGE RankNTypes #-}
 module Text.Cassette.Prim
-       ( -- * Datatypes
-         K7(..), Sym(..), C, PP, PP0
-         -- * Composition
-       , (<>), (-->), (<|>)
-         -- * Extraction
-       , play, flip, parse, pretty
-         -- * Primitive combinators
-       , empty, nothing, shift, unshift, string, satisfy, lookAhead, eof
-       ) where
+  ( -- * Datatypes
+    K7(..), Sym(..), C, PP, PP0
+    -- * Composition
+  , (<>)
+  , (-->)
+  , (<|>)
+    -- * Extraction
+  , play
+  , flip
+  , parse
+  , pretty
+    -- * Primitive combinators
+  , empty
+  , nothing
+  , shift
+  , unshift
+  , string
+  , satisfy
+  , lookAhead
+  , eof
+  ) where
 
 import Data.List (stripPrefix)
 import Control.Category
 import Prelude hiding (flip, id, (.))
 import qualified Prelude
-
 
 -- | A cassette consists of two tracks, represented by functions. The
 -- functions on each track are not necessarily inverses of each other, and do
