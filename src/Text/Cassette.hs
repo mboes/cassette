@@ -48,15 +48,10 @@
 -- hackery (in a separate package). A number of leads for standard datatypes
 -- are defined in the 'Text.Cassette.Lead' module.
 
-module Text.Cassette
-       ( module Text.Cassette.Prim
-       , module Text.Cassette.Lead
-       , module Text.Cassette.Combinator
-       , module Text.Cassette.Char
-       , module Text.Cassette.Number ) where
+module Text.Cassette (module X) where
 
-import Text.Cassette.Prim
-import Text.Cassette.Lead
-import Text.Cassette.Combinator
-import Text.Cassette.Char
-import Text.Cassette.Number
+import Text.Cassette.Prim as X
+import Text.Cassette.Lead as X
+import Text.Cassette.Combinator as X
+import Text.Cassette.Char as X
+import Text.Cassette.Number as X
