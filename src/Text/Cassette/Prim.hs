@@ -1,7 +1,11 @@
 {-# LANGUAGE RankNTypes #-}
 module Text.Cassette.Prim
-  ( -- * Datatypes
-    K7(..), Sym(..), C, PP, PP0
+  ( -- * Data types
+    K7(..)
+  , Sym(..)
+  , C
+  , PP
+  , PP0
     -- * Composition
   , (<>)
   , (-->)
