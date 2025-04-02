@@ -1,0 +1,17 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build
+      run: cabal build
+    - name: Run tests
+      run: cabal test
+    - name: Generate docs
+      run: cabal haddock --haddock-internal
