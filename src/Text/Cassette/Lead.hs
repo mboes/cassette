@@ -4,8 +4,8 @@ module Text.Cassette.Lead where
 
 import Text.Cassette.Prim
 
--- | The type of binary leads, parameterized by the type of the left operand,
--- the right operand, and the type of the result.
+-- | The type of unary leads, parameterized by the type of the operand and the
+-- type of the result.
 type UnL a b = forall r r'.
   K7 (C (b -> r))  (C (a -> r))
      (C (b -> r')) (C (a -> r'))
