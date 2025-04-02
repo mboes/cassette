@@ -41,7 +41,7 @@ data K7 a b c d = K7 { sideA :: a -> b, sideB :: d -> c }
 -- '(<>)').
 newtype Sym a b = Sym { unSym :: K7 a b a b }
 
-infixr 9 <>
+infixr 6 <>
 
 -- | Tape splicing operator. Functions on each track are composed pairwise.
 (<>) :: K7 b c b' c' -> K7 a b a' b' -> K7 a c a' c'
@@ -52,7 +52,7 @@ instance Category Sym where
   id = Sym (K7 id id)
   Sym csst1 . Sym csst2 = Sym (csst1 <> csst2)
 
-infixr 8 -->
+infixr 5 -->
 
 -- | A synonym to '(<>)' with its arguments flipped and with lower precedence.
 (-->) = Prelude.flip (<>)
