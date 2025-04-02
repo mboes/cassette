@@ -26,10 +26,10 @@ module Text.Cassette.Prim
   , eof
   ) where
 
-import Data.List (stripPrefix)
 import Control.Category
-import Prelude hiding (flip, id, (.))
+import Data.List (stripPrefix)
 import qualified Prelude
+import Prelude hiding (flip, id, (.), (<>))
 
 -- | A cassette consists of two tracks, represented by functions. The
 -- functions on each track are not necessarily inverses of each other, and do

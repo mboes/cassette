@@ -2,10 +2,11 @@
 
 module Text.Cassette.Number where
 
-import Text.Cassette.Prim
-import Text.Cassette.Lead
-import Text.Cassette.Combinator
+import Prelude hiding ((<>))
 import Text.Cassette.Char
+import Text.Cassette.Combinator
+import Text.Cassette.Lead
+import Text.Cassette.Prim
 
 -- | An integer literal, positive or negative.
 int :: PP Int

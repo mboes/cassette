@@ -3,8 +3,9 @@
 
 module Text.Cassette.Combinator where
 
-import Text.Cassette.Prim
+import Prelude hiding ((<>))
 import Text.Cassette.Lead
+import Text.Cassette.Prim
 
 -- | Applies each cassette in the supplied list in order, until one of them
 -- succeeds.
