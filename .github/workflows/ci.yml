@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: cachix/install-nix-action@v31
+    - name: Flake check
+      run: |
+        nix flake check
+    - name: Download package index
+      run: |
+        nix develop --command cabal update
+    - name: Build
+      run: |
+        nix develop --command cabal build
+    - name: Run tests
+      run: |
+        nix develop --command cabal test
+    - name: Check code in documentation
+      run: |
+        nix develop --command cabal doctest
+    - name: Generate documentation
+      run: |
+        nix develop --command cabal haddock
