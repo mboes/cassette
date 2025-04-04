@@ -4,29 +4,55 @@
 -- other of which (accessed by flipping the cassette) is read in the opossite
 -- direction.
 --
--- Here is an example specification for the lambda-calculus:
+-- = __Example__
+-- Here is an example specification for the lambda-calculus.
 --
--- > varL = K7 leadout leadin where
--- >   leadout k k' s x = k (\ s _ -> k' s x) s (Var x)
--- >   leadin k k' s t@(Var x)  = k (\ s _ -> k' s t) s x
--- >   leadin k k' s t          = k' s t
--- >
--- > absL = K7 leadout leadin where
--- >   leadout k k' s t' x = k (\ s _ -> k' s t' x) s (Lam x t')
--- >   leadin k k' s t@(Lam x t)  = k (\ s _ _ -> k' s t) s t x
--- >   leadin k k' s t            = k' s t
--- >
--- > appL = K7 leadout leadin where
--- >   leadout k s t2 t1 = k (\ s _ -> k' s t2 t1) s (App t1 t2)
--- >   leadin k k' s t@(App t1 t2)  = k (\ s _ _ -> k' s t) s t2 t1
--- >   leadin k k' s t            = k' s t
--- >
--- > parens p = char '(' <> p <> char ')'
--- >
--- > term :: PP Term
--- > term  =   varL --> ident
--- >       <|> absL --> char '\' <> ident <> term
--- >       <|> appL --> parens (term <> sepSpace <> term)
+-- >>> :{
+--   type Ident = String
+--   data Term where
+--     Var :: Ident -> Term
+--     Abs :: Ident -> Term -> Term
+--     App :: Term -> Term -> Term
+--   deriving instance Show Term
+-- :}
+--
+-- >>> :{
+-- let ident = many1 (oneOf (['a'..'z'] ++ ['0'..'9'])) -- TODO letter first
+--     varL = K7 leadout leadin where
+--        leadout k k' s x = k (\ s _ -> k' s x) s (Var x)
+--        leadin k k' s t@(Var x) = k (\ s _ -> k' s t) s x
+--        leadin k k' s t = k' s t
+--     absL = K7 leadout leadin where
+--        leadout k k' s t1 x = k (\ s _ -> k' s t1 x) s (Abs x t1)
+--        leadin k k' s t@(Abs x t1) = k (\ s _ _ -> k' s t) s t1 x
+--        leadin k k' s t = k' s t
+--     appL = K7 leadout leadin where
+--        leadout k k' s t2 t1 = k (\ s _ -> k' s t2 t1) s (App t1 t2)
+--        leadin k k' s t@(App t1 t2) = k (\ s _ _ -> k' s t) s t2 t1
+--        leadin k k' s t = k' s t
+-- :}
+--
+-- >>> :{
+-- let term :: PP Term
+--     term =
+--       varL --> ident <|>
+--       absL --> char 'λ' <> ident <> char '.' <> skipSpace <> term <|>
+--       appL --> parens (term <> sepSpace <> term)
+--     parens p = char '(' <> p <> char ')'
+-- :}
+--
+-- >>> parse term "x"
+-- Just (Var "x")
+--
+-- >>> parse term "λx. x"
+-- Just (Abs "x" (Var "x"))
+--
+-- -- >>> parse term "λx. (x x)"
+-- Just (Abs "x" (App (Var "x") (Var "x")))
+--
+-- This code assumes the "leads" @varL@, @absL@ and @appL@, which wrap
+-- constructors. They can be defined by hand as follows:
+--
 --
 -- From this single specification, we can extract a parser,
 --
@@ -50,8 +76,9 @@
 
 module Text.Cassette (module X) where
 
-import Text.Cassette.Prim as X
-import Text.Cassette.Lead as X
-import Text.Cassette.Combinator as X
+import Prelude hiding ((<>))
 import Text.Cassette.Char as X
+import Text.Cassette.Combinator as X
+import Text.Cassette.Lead as X
 import Text.Cassette.Number as X
+import Text.Cassette.Prim as X

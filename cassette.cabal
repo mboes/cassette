@@ -26,3 +26,14 @@ library
                         Text.Cassette.Combinator
                         Text.Cassette.Char
                         Text.Cassette.Number
+
+test-suite tests
+  type: exitcode-stdio-1.0
+  default-language: GHC2021
+  hs-source-dirs: tests
+  main-is: test.hs
+  ghc-options: -Wall
+  build-depends:
+    base >= 4.8,
+    cassette,
+    hspec >= 2.1

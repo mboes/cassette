@@ -6,7 +6,11 @@
       devShells.default =
         let pkgs = import nixpkgs { inherit system; }; in
         pkgs.mkShell {
-          packages = with pkgs; [ cabal-install haskell.compiler.ghc9101 ];
+          packages = with pkgs; [
+            cabal-install
+            haskell.compiler.ghc9101
+            (haskell.lib.compose.enableCabalFlag "cabal-doctest" haskell.packages.ghc910.doctest)
+          ];
       };
     });
 }
