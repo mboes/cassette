@@ -1,4 +1,3 @@
-{-# LANGUAGE RankNTypes #-}
 module Text.Cassette.Prim
   ( -- * Data types
     K7(..)

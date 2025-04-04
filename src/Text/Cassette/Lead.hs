@@ -1,5 +1,3 @@
-{-# LANGUAGE RankNTypes #-}
-
 module Text.Cassette.Lead where
 
 import Text.Cassette.Prim

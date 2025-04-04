@@ -1,5 +1,4 @@
 {-# LANGUAGE ImpredicativeTypes #-}
-{-# LANGUAGE RankNTypes #-}
 
 module Text.Cassette.Combinator where
 
