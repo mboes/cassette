@@ -22,8 +22,15 @@
         devShells.default = pkgs.mkShell {
           packages =
             with pkgs;
+            let
+              doctest = lib.pipe haskell.packages.ghc910.doctest [
+                (haskell.lib.compose.enableCabalFlag "cabal-doctest")
+                haskell.lib.compose.dontCheck
+              ];
+            in
             [
               cabal-install
+              doctest
               haskell.compiler.ghc9101
             ];
         };
