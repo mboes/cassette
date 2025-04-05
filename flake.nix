@@ -12,12 +12,11 @@
       flake-utils,
       treefmt-nix,
     }:
-    flake-utils.lib.eachDefaultSystem (system: {
-      devShells.default =
-        let
-          pkgs = import nixpkgs { inherit system; };
-        in
-        pkgs.mkShell {
+    flake-utils.lib.eachDefaultSystem (
+      system:
+      let
+        pkgs = import nixpkgs { inherit system; };
+        devShells.default = pkgs.mkShell {
           packages =
             with pkgs;
             [
@@ -25,10 +24,11 @@
               haskell.compiler.ghc9101
             ];
         };
-      formatter =
-        let
-          pkgs = import nixpkgs { inherit system; };
-        in
-        (treefmt-nix.lib.evalModule pkgs ./treefmt.nix).config.build.wrapper;
-    });
+        formatter = (treefmt-nix.lib.evalModule pkgs ./treefmt.nix).config.build.wrapper;
+      in
+      {
+        inherit devShells;
+        inherit formatter;
+      }
+    );
 }
