@@ -16,6 +16,9 @@
       system:
       let
         pkgs = import nixpkgs { inherit system; };
+        treefmt = (treefmt-nix.lib.evalModule pkgs ./treefmt.nix).config.build;
+      in
+      {
         devShells.default = pkgs.mkShell {
           packages =
             with pkgs;
@@ -24,11 +27,10 @@
               haskell.compiler.ghc9101
             ];
         };
-        formatter = (treefmt-nix.lib.evalModule pkgs ./treefmt.nix).config.build.wrapper;
-      in
-      {
-        inherit devShells;
-        inherit formatter;
+        formatter = treefmt.wrapper;
+        checks = {
+          formatting = treefmt.check self;
+        };
       }
     );
 }
