@@ -5,7 +5,8 @@
 -- direction.
 --
 -- = __Example__
--- Here is an example specification for the lambda-calculus.
+--
+-- Consider the data type for abstract syntax trees of the λ-calculus:
 --
 -- >>> :{
 --   type Ident = String
@@ -16,8 +17,10 @@
 --   deriving instance Show Term
 -- :}
 --
+-- Given a few wrappers lifting constructors to cassette /leads/ (the
+-- definitions are mechanical), ...
+--
 -- >>> :{
--- let ident = many1 (oneOf (['a'..'z'] ++ ['0'..'9'])) -- TODO letter first
 --     varL = K7 leadout leadin where
 --        leadout k k' s x = k (\ s _ -> k' s x) s (Var x)
 --        leadin k k' s t@(Var x) = k (\ s _ -> k' s t) s x
@@ -32,35 +35,30 @@
 --        leadin k k' s t = k' s t
 -- :}
 --
+-- ... the concrete syntax for terms of the λ-calculus can be defined
+-- as follows:
+--
 -- >>> :{
 -- let term :: PP Term
 --     term =
 --       varL --> ident <|>
---       absL --> char 'λ' <> ident <> char '.' <> skipSpace <> term <|>
+--       absL --> char '^' <> ident <> char '.' <> optSpace <> term <|>
 --       appL --> parens (term <> sepSpace <> term)
 --     parens p = char '(' <> p <> char ')'
+--     -- TODO first character of an ident should be a letter.
+--     ident = many1 alphaNum
 -- :}
 --
--- >>> parse term "x"
--- Just (Var "x")
+-- From this single specification, we can extract a parser, using
+-- 'parse', and also a pretty printer, using 'pretty'.
 --
--- >>> parse term "λx. x"
--- Just (Abs "x" (Var "x"))
---
--- -- >>> parse term "λx. (x x)"
+-- >>> parse term "^x. (x x)"
 -- Just (Abs "x" (App (Var "x") (Var "x")))
 --
--- This code assumes the "leads" @varL@, @absL@ and @appL@, which wrap
--- constructors. They can be defined by hand as follows:
+-- >>> pretty term (Abs "x" (App (Var "x") (Var "x")))
+-- Just "^x. (x x)"
 --
---
--- From this single specification, we can extract a parser,
---
--- > parse term :: PP Term -> String -> Maybe Term
---
--- and also a pretty printer,
---
--- > pretty term :: PP Term -> Term -> Maybe String
+-- = Grammar specifications
 --
 -- Specifications are built from primitive and derived combinators, which
 -- affect the input string in some way. For each constructor of each datatype,
