@@ -1,3 +1,5 @@
+{-# LANGUAGE RankNTypes #-}
+
 module Text.Cassette.Char where
 
 import Data.Char

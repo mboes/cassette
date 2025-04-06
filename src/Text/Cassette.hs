@@ -79,3 +79,6 @@ import Text.Cassette.Combinator as X
 import Text.Cassette.Lead as X
 import Text.Cassette.Number as X
 import Text.Cassette.Prim as X
+
+-- $setup
+-- >>> :seti -XStandaloneDeriving -XGADTSyntax
