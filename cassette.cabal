@@ -10,7 +10,7 @@ description:
   arguments are always curried, rather than packed into nested
   tuples.
 category: Parsing, Text
-license: BSD3
+license: Apache-2.0
 license-file: LICENSE
 cabal-version: >= 1.10.0
 build-type: Simple
