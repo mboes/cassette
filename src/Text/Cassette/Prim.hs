@@ -54,6 +54,7 @@ instance Category Sym where
 infixr 5 -->
 
 -- | A synonym to '(<>)' with its arguments flipped and with lower precedence.
+(-->) :: K7 a b a' b' -> K7 b c b' c' -> K7 a c a' c'
 (-->) = Prelude.flip (<>)
 
 -- | The type of string transformers in CPS, /i.e./ functions from strings to
@@ -94,14 +95,14 @@ infixr 1 <|>
 -- to any particular choice.
 (<|>) :: PP a -> PP a -> PP a
 K7 f f' <|> K7 g g' =
-  K7 (\k k' s -> f k (\s' -> g k k' s) s)
-     (\k k' s x -> f' k (\s' -> g' k k' s) s x)
+  K7 (\k k' s -> f k (\_ -> g k k' s) s)
+     (\k k' s x -> f' k (\_ -> g' k k' s) s x)
 
 -- | Always fail. This combinator does not produce/consume any value,
 -- but has a more general type than 'PP0' because it furthermore never
 -- succeeds.
 empty :: K7 a (C r) (C r') d
-empty = K7 (\k k' s -> k' s) (\k k' s -> k' s)
+empty = K7 (\_ k' s -> k' s) (\_ k' s -> k' s)
 
 -- | Do nothing.
 nothing :: PP0
@@ -142,7 +143,7 @@ string x = K7 (\k k' s -> maybe (k' s) (k k') $ stripPrefix x s) (write0 x)
 satisfy :: (Char -> Bool) -> PP Char
 satisfy p = K7 f g where
   f k k' (x:xs) | p x = k (\s _ -> k' s) xs x
-  f k k' s = k' s
+  f _ k' s = k' s
   g k k' s x | p x = k (\s -> k' s x) (x:s)
              | otherwise = k' s x
 
@@ -154,4 +155,4 @@ lookAhead (K7 f f') = K7 (\k k' s -> f (\k' _ -> k k' s) k' s) (\k k' s -> f' (\
 eof :: PP0
 eof = K7 isEmpty isEmpty where
   isEmpty k k' "" = k k' ""
-  isEmpty k k' s  = k' s
+  isEmpty _ k' s  = k' s

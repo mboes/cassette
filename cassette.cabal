@@ -19,6 +19,7 @@ library
   hs-source-dirs: src
   build-depends: base >= 4 && < 5
   default-language: GHC2021
+  ghc-options: -Wall -Wno-name-shadowing
   exposed-modules:
     Text.Cassette
     Text.Cassette.Prim
