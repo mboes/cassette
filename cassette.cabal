@@ -1,28 +1,29 @@
-Name:           cassette
-Version:        0.1.0
-Author:         Mathieu Boespflug
-Maintainer:     Mathieu Boespflug <mboes@tweag.net>
-Synopsis:       A combinator library for simultaneously defining parsers and pretty printers.
+Name: cassette
+Version: 0.1.0
+Author: Mathieu Boespflug
+Maintainer: Mathieu Boespflug <mboes@tweag.net>
+Synopsis: A combinator library for simultaneously defining parsers and pretty printers.
 Description:
-    Combinator library for defining both type safe parsers and pretty
-    printers simultaneously. This library performs well in practice
-    because parsers and printers are implemented in CPS and because
-    arguments are always curried, rather than packed into nested
-    tuples.
-Category:       Parsing, Text
-License:        BSD3
-License-File:   LICENSE
-Cabal-Version:  >= 1.10.0
-Build-Type:     Simple
-Tested-With:    GHC==7.4, GHC==7.6, GHC==7.8
+  Combinator library for defining both type safe parsers and pretty
+  printers simultaneously. This library performs well in practice
+  because parsers and printers are implemented in CPS and because
+  arguments are always curried, rather than packed into nested
+  tuples.
+Category: Parsing, Text
+License: BSD3
+License-File: LICENSE
+Cabal-Version: >= 1.10.0
+Build-Type: Simple
+Tested-With: GHC==7.4, GHC==7.6, GHC==7.8
 
 library
   Hs-Source-Dirs: src
-  Build-Depends:  base >= 4 && < 5
-  Default-Language:     GHC2021
-  Exposed-Modules:      Text.Cassette
-                        Text.Cassette.Prim
-                        Text.Cassette.Lead
-                        Text.Cassette.Combinator
-                        Text.Cassette.Char
-                        Text.Cassette.Number
+  Build-Depends: base >= 4 && < 5
+  Default-Language: GHC2021
+  Exposed-Modules:
+    Text.Cassette
+    Text.Cassette.Prim
+    Text.Cassette.Lead
+    Text.Cassette.Combinator
+    Text.Cassette.Char
+    Text.Cassette.Number
