@@ -41,6 +41,10 @@ optSpace = unshift " " $ many (satisfy isSpace)
 sepSpace :: PP0
 sepSpace = string " " <> skipSpace
 
+-- | Parses a space character (\' \').
+space :: PP0
+space = char ' '
+
 -- | Parses a newline character (\'\\n\').
 newline :: PP0
 newline = char '\n'
