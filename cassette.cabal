@@ -1,7 +1,7 @@
 name: cassette
 version: 0.1.0
 author: Mathieu Boespflug
-maintainer: Mathieu Boespflug <mboes@tweag.net>
+maintainer: Mathieu Boespflug <m@boespfl.ug>
 synopsis: A combinator library for simultaneously defining parsers and pretty printers.
 description:
   Combinator library for defining both type safe parsers and pretty
