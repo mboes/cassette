@@ -9,7 +9,7 @@ import Text.Cassette.Prim
 -- | Applies each cassette in the supplied list in order, until one of them
 -- succeeds.
 choice :: [PP a] -> PP a
-choice [p] = p
+choice [] = empty
 choice (p:ps) = p <|> choice ps
 
 -- | @count n p@ matches @n@ occurrences of @p@.
