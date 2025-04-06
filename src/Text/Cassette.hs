@@ -45,8 +45,7 @@
 --       absL --> char '^' <> ident <> char '.' <> optSpace <> term <|>
 --       appL --> parens (term <> sepSpace <> term)
 --     parens p = char '(' <> p <> char ')'
---     -- TODO first character of an ident should be a letter.
---     ident = many1 alphaNum
+--     ident = consL --> letter <> many alphaNum
 -- :}
 --
 -- From this single specification, we can extract a parser, using
