@@ -94,8 +94,10 @@ K7 f f' <|> K7 g g' =
   K7 (\k k' s -> f k (\s' -> g k k' s) s)
      (\k k' s x -> f' k (\s' -> g' k k' s) s x)
 
--- | Always fail.
-empty :: PP0
+-- | Always fail. This combinator does not produce/consume any value,
+-- but has a more general type than 'PP0' because it furthermore never
+-- succeeds.
+empty :: K7 a (C r) (C r') d
 empty = K7 (\k k' s -> k' s) (\k k' s -> k' s)
 
 -- | Do nothing.
