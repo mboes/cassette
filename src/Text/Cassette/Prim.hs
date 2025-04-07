@@ -67,11 +67,11 @@ type C r = (String -> r) -> String -> r
 -- produces a value in addition to transforming the string, /i.e./ it is a
 -- parser. The B-side consumes a value to transform the string, /i.e./ it is a
 -- printer.
-type PP a = forall r r'. K7 (C (a -> r)) (C r) (C (a -> r')) (C r')
+type PP a = forall r. K7 (C (a -> r)) (C r) (C (a -> r)) (C r)
 
 -- | The type of cassettes only useful for their effect on the input
 -- or output strings, but do not produce/consume any value.
-type PP0  = forall r r'. K7 (C r) (C r) (C r') (C r')
+type PP0  = forall r. K7 (C r) (C r) (C r) (C r)
 
 -- | Select the A-side.
 play :: K7 a b c d -> a -> b
