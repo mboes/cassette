@@ -144,10 +144,12 @@ string x = K7 (\k k' s -> maybe (k' s) (k k') $ stripPrefix x s) (write0 x)
 -- | Successful only if predicate holds.
 satisfy :: (Char -> Bool) -> PP Char
 satisfy p = K7 f g where
-  f k k' (x:xs) | p x = k (\s _ -> k' s) xs x
+  f k k' (x:xs)
+    | p x = k (\s _ -> k' s) xs x
   f _ k' s = k' s
-  g k k' s x | p x = k (\s -> k' s x) (x:s)
-             | otherwise = k' s x
+  g k k' s x
+    | p x = k (\s -> k' s x) (x:s)
+    | otherwise = k' s x
 
 -- | Parse/print without consuming/producing any input.
 lookAhead :: PP a -> PP a
