@@ -82,8 +82,8 @@ parse csst = play csst (\_ _ x -> Just x) (const Nothing)
 pretty :: PP a -> a -> Maybe String
 pretty csst = play (flip csst) (const Just) (\_ _ -> Nothing) ""
 
--- Use same priority and associativity as in Parsec.
-infixr 1 <|>
+-- Use same priority and associativity as in base.
+infixl 3 <|>
 
 -- | Choice operator. If the first cassette fails, then try the second parser.
 -- Note that this is an unrestricted backtracking operator: it never commits
