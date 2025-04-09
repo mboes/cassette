@@ -7,7 +7,6 @@ module Text.Cassette.Prim
   , PP
   , PP0
     -- * Composition
-  , (<>)
   , (-->)
   , (<|>)
     -- * Extraction
@@ -29,28 +28,22 @@ module Text.Cassette.Prim
 import Control.Category (Category(..))
 import Data.List (stripPrefix)
 import qualified Prelude
-import Prelude hiding (flip, id, (.), (<>))
+import Prelude hiding (flip, id, (.))
 
 -- | A cassette consists of two tracks, represented by functions. The functions
 -- on each track are inverses of each other.
 data K7 a b = K7 { sideA :: a -> b, sideB :: b -> a }
 
-infixr 6 <>
-
--- | Tape splicing operator. Functions on each track are composed pairwise.
-(<>) :: K7 b c -> K7 a b -> K7 a c
--- Irrefutable patterns to support definitions of combinators by coinduction.
-~(K7 f f') <> ~(K7 g g') = K7 (f . g) (g' . f')
-
 instance Category K7 where
   id = K7 id id
-  (.) = (<>)
+  -- Irrefutable patterns to support definitions of combinators by coinduction.
+  ~(K7 f f') . ~(K7 g g') = K7 (f . g) (g' . f')
 
 infixr 5 -->
 
--- | A synonym to '(<>)' with its arguments flipped and with lower precedence.
+-- | A synonym to '(.)' with its arguments flipped and with lower precedence, but higher precedence than '(<|>)'.
 (-->) :: K7 a b -> K7 b c -> K7 a c
-(-->) = Prelude.flip (<>)
+(-->) = Prelude.flip (.)
 
 -- | The type of string transformers in CPS, /i.e./ functions from strings to
 -- strings.

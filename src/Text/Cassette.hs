@@ -42,10 +42,10 @@
 -- let term :: PP Term
 --     term =
 --       varL --> ident <|>
---       absL --> char '^' <> ident <> char '.' <> optSpace <> term <|>
---       appL --> parens (term <> sepSpace <> term)
---     parens p = char '(' <> p <> char ')'
---     ident = consL --> letter <> many alphaNum
+--       absL --> char '^' . ident . char '.' . optSpace . term <|>
+--       appL --> parens (term . sepSpace . term)
+--     parens p = char '(' . p . char ')'
+--     ident = consL --> letter . many alphaNum
 -- :}
 --
 -- From this single specification, we can extract a parser, using
@@ -73,7 +73,7 @@
 
 module Text.Cassette (module X) where
 
-import Prelude hiding ((<>))
+import Prelude hiding ((.))
 import Text.Cassette.Char as X
 import Text.Cassette.Combinator as X
 import Text.Cassette.Lead as X
@@ -82,3 +82,4 @@ import Text.Cassette.Prim as X
 
 -- $setup
 -- >>> :seti -XStandaloneDeriving -XGADTSyntax
+-- >>> import Control.Category

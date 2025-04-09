@@ -2,7 +2,8 @@
 
 module Text.Cassette.Number where
 
-import Prelude hiding ((<>))
+import Control.Category ((.))
+import Prelude hiding ((.))
 import Text.Cassette.Char
 import Text.Cassette.Combinator
 import Text.Cassette.Lead
@@ -12,6 +13,6 @@ import Text.Cassette.Prim
 int :: PP Int
 int =
     intL --> many1 digit <|>
-    intL --> consL --> satisfy (== '-') <> many1 digit
+    intL --> consL --> satisfy (== '-') . many1 digit
   where
     intL = liftL read show

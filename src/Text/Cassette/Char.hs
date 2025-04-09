@@ -2,8 +2,9 @@
 
 module Text.Cassette.Char where
 
+import Control.Category ((.))
 import Data.Char
-import Prelude hiding ((<>))
+import Prelude hiding ((.))
 import Text.Cassette.Combinator
 import Text.Cassette.Prim
 
@@ -41,7 +42,7 @@ optSpace = unshift " " $ many (satisfy isSpace)
 -- occur. It requires one or more space characters while parsing,
 -- and produces a single space character while printing.
 sepSpace :: PP0
-sepSpace = string " " <> skipSpace
+sepSpace = string " " . skipSpace
 
 -- | Parses a space character (\' \').
 space :: PP0
