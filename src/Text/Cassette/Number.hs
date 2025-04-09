@@ -14,4 +14,4 @@ int =
     intL --> many1 digit <|>
     intL --> consL --> satisfy (== '-') <> many1 digit
   where
-    intL = liftL $ Sym $ K7 read show
+    intL = liftL read show

@@ -3,7 +3,6 @@
 module Text.Cassette.Prim
   ( -- * Data types
     K7(..)
-  , Sym(..)
   , C
   , PP
   , PP0
@@ -27,36 +26,30 @@ module Text.Cassette.Prim
   , eof
   ) where
 
-import Control.Category
+import Control.Category (Category(..))
 import Data.List (stripPrefix)
 import qualified Prelude
 import Prelude hiding (flip, id, (.), (<>))
 
--- | A cassette consists of two tracks, represented by functions. The
--- functions on each track are not necessarily inverses of each other, and do
--- not necessarily connect the same start and end types.
-data K7 a b c d = K7 { sideA :: a -> b, sideB :: d -> c }
-
--- | Symmetric cassettes do have functions that are inverses of each other on
--- each track. Symmetric cassettes form a category under splicing (see
--- '(<>)').
-newtype Sym a b = Sym { unSym :: K7 a b a b }
+-- | A cassette consists of two tracks, represented by functions. The functions
+-- on each track are inverses of each other.
+data K7 a b = K7 { sideA :: a -> b, sideB :: b -> a }
 
 infixr 6 <>
 
 -- | Tape splicing operator. Functions on each track are composed pairwise.
-(<>) :: K7 b c b' c' -> K7 a b a' b' -> K7 a c a' c'
+(<>) :: K7 b c -> K7 a b -> K7 a c
 -- Irrefutable patterns to support definitions of combinators by coinduction.
 ~(K7 f f') <> ~(K7 g g') = K7 (f . g) (g' . f')
 
-instance Category Sym where
-  id = Sym (K7 id id)
-  Sym csst1 . Sym csst2 = Sym (csst1 <> csst2)
+instance Category K7 where
+  id = K7 id id
+  (.) = (<>)
 
 infixr 5 -->
 
 -- | A synonym to '(<>)' with its arguments flipped and with lower precedence.
-(-->) :: K7 a b a' b' -> K7 b c b' c' -> K7 a c a' c'
+(-->) :: K7 a b -> K7 b c -> K7 a c
 (-->) = Prelude.flip (<>)
 
 -- | The type of string transformers in CPS, /i.e./ functions from strings to
@@ -67,18 +60,18 @@ type C r = (String -> r) -> String -> r
 -- produces a value in addition to transforming the string, /i.e./ it is a
 -- parser. The B-side consumes a value to transform the string, /i.e./ it is a
 -- printer.
-type PP a = forall r. K7 (C (a -> r)) (C r) (C (a -> r)) (C r)
+type PP a = forall r. K7 (C (a -> r)) (C r)
 
--- | The type of cassettes only useful for their effect on the input
--- or output strings, but do not produce/consume any value.
-type PP0  = forall r. K7 (C r) (C r) (C r) (C r)
+-- | The type of cassettes only useful for their effect on the input or output
+-- strings, but do not produce/consume any value.
+type PP0  = forall r. K7 (C r) (C r)
 
 -- | Select the A-side.
-play :: K7 a b c d -> a -> b
+play :: K7 a b -> a -> b
 play csst = sideA csst
 
 -- | Switch the A-side and B-side around.
-flip :: K7 a b c d -> K7 d c b a
+flip :: K7 a b -> K7 b a
 flip (K7 f g) = K7 g f
 
 -- | Extract the parser from a cassette.
@@ -103,7 +96,7 @@ K7 f f' <|> K7 g g' =
 -- | Always fail. This combinator does not produce/consume any value,
 -- but has a more general type than 'PP0' because it furthermore never
 -- succeeds.
-empty :: K7 a (C r) (C r') d
+empty :: K7 (C r) (C r')
 empty = K7 (\_ k' s -> k' s) (\_ k' s -> k' s)
 
 -- | Do nothing.
