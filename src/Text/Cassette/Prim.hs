@@ -30,11 +30,11 @@ import Data.List (stripPrefix)
 import qualified Prelude
 import Prelude hiding (flip, id, (.))
 
--- | A cassette consists of two tracks, represented by functions. The functions
--- on each track are inverses of each other.
-data K7 a b = K7 { sideA :: a -> b, sideB :: b -> a }
+-- | A cassette consists of two tracks, represented by profunctors. The
+-- functions on each track are inverses of each other.
+data K7 p a b = K7 { sideA :: p a b, sideB :: p b a }
 
-instance Category K7 where
+instance Category p => Category (K7 p) where
   id = K7 id id
   -- Irrefutable patterns to support definitions of combinators by coinduction.
   ~(K7 f f') . ~(K7 g g') = K7 (f . g) (g' . f')
@@ -43,8 +43,16 @@ infixr 5 -->
 
 -- | A synonym to '(.)' with its arguments flipped and with lower precedence,
 -- but higher precedence than '(<|>)'.
-(-->) :: K7 a b -> K7 b c -> K7 a c
+(-->) :: Category p => K7 p a b -> K7 p b c -> K7 p a c
 (-->) = Prelude.flip (.)
+
+-- | Select the A-side.
+play :: K7 p a b -> p a b
+play csst = sideA csst
+
+-- | Switch the A-side and B-side around.
+flip :: K7 p a b -> K7 p b a
+flip (K7 f g) = K7 g f
 
 -- | The type of string transformers in CPS, /i.e./ functions from strings to
 -- strings.
@@ -54,19 +62,11 @@ type C r = (String -> r) -> String -> r
 -- produces a value in addition to transforming the string, /i.e./ it is
 -- a parser. The B-side consumes a value to transform the string, /i.e./ it is
 -- a printer.
-type PP a = forall r. K7 (C (a -> r)) (C r)
+type PP a = forall r. K7 (->) (C (a -> r)) (C r)
 
 -- | The type of cassettes only useful for their effect on the input or output
 -- strings, but do not produce/consume any value.
-type PP0  = forall r. K7 (C r) (C r)
-
--- | Select the A-side.
-play :: K7 a b -> a -> b
-play csst = sideA csst
-
--- | Switch the A-side and B-side around.
-flip :: K7 a b -> K7 b a
-flip (K7 f g) = K7 g f
+type PP0  = forall r. K7 (->) (C r) (C r)
 
 -- | Extract the parser from a cassette.
 parse :: PP a -> String -> Maybe a
@@ -89,7 +89,7 @@ K7 f f' <|> K7 g g' =
 
 -- | Always fail. This combinator does not produce/consume any value, but has
 -- a more general type than 'PP0' because it furthermore never succeeds.
-empty :: K7 (C r) (C r')
+empty :: K7 (->) (C r) (C r')
 empty = K7 (\_ k' s -> k' s) (\_ k' s -> k' s)
 
 -- | Do nothing.

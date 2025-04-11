@@ -6,11 +6,11 @@ import Text.Cassette.Prim
 
 -- | The type of unary leads, parameterized by the type of the operand and the
 -- type of the result.
-type UnL a b = forall r. K7 (C (b -> r)) (C (a -> r))
+type UnL a b = forall r. K7 (->) (C (b -> r)) (C (a -> r))
 
 -- | The type of binary leads, parameterized by the type of the left operand,
 -- the right operand, and the type of the result.
-type BinL a b c = forall r. K7 (C (c -> r)) (C (b -> a -> r))
+type BinL a b c = forall r. K7 (->) (C (c -> r)) (C (b -> a -> r))
 
 -- | Lift a pair of symmetric functions to a lead.
 liftL :: (a -> b) -> (b -> a) -> UnL a b
@@ -68,12 +68,12 @@ pairL =
   K7 (\k k' s x2 x1 -> k (\s _ -> k' s x2 x1) s (x1, x2))
      (\k k' s t@(x1, x2) -> k (\s _ _ -> k' s t) s x2 x1)
 
-tripleL :: K7 (C ((a,b,c) -> r)) (C (c -> b -> a -> r))
+tripleL :: K7 (->) (C ((a,b,c) -> r)) (C (c -> b -> a -> r))
 tripleL =
   K7 (\k k' s x3 x2 x1 -> k (\s _ -> k' s x3 x2 x1) s (x1, x2, x3))
      (\k k' s t@(x1, x2, x3) -> k (\s _ _ _ -> k' s t) s x3 x2 x1)
 
-quadrupleL :: K7 (C ((a,b,c,d) -> r)) (C (d -> c -> b -> a -> r))
+quadrupleL :: K7 (->) (C ((a,b,c,d) -> r)) (C (d -> c -> b -> a -> r))
 quadrupleL =
   K7 (\k k' s x4 x3 x2 x1 -> k (\s _ -> k' s x4 x3 x2 x1) s (x1, x2, x3, x4))
      (\k k' s t@(x1, x2, x3, x4) -> k (\s _ _ _ _ -> k' s t) s x4 x3 x2 x1)
