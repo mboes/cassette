@@ -21,15 +21,15 @@
 -- definitions are mechanical), ...
 --
 -- >>> :{
---     varL = K7 leadout leadin where
+--     varL = K7 (Tr leadout) (Tr leadin) where
 --        leadout k k' s x = k (\ s _ -> k' s x) s (Var x)
 --        leadin k k' s t@(Var x) = k (\ s _ -> k' s t) s x
 --        leadin k k' s t = k' s t
---     absL = K7 leadout leadin where
+--     absL = K7 (Tr leadout) (Tr leadin) where
 --        leadout k k' s t1 x = k (\ s _ -> k' s t1 x) s (Abs x t1)
 --        leadin k k' s t@(Abs x t1) = k (\ s _ _ -> k' s t) s t1 x
 --        leadin k k' s t = k' s t
---     appL = K7 leadout leadin where
+--     appL = K7 (Tr leadout) (Tr leadin) where
 --        leadout k k' s t2 t1 = k (\ s _ -> k' s t2 t1) s (App t1 t2)
 --        leadin k k' s t@(App t1 t2) = k (\ s _ _ -> k' s t) s t2 t1
 --        leadin k k' s t = k' s t
