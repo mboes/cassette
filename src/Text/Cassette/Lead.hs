@@ -18,11 +18,11 @@ liftL f f' =
     K7 (\k k' s x -> k (\s _ -> k' s x) s (f x))
        (\k k' s y -> k (\s _ -> k' s y) s (f' y))
 
--- | Iterates a one step construction function (resp. deconstruction)
--- function, i.e. a lead, thus obtaining a right fold (resp. unfold). The
--- resulting lead is a catamorphism on one side and an anamorpism on the
--- other, hence the name. The type of this function is the same as that of
--- 'foldr', lifted to cassettes.
+-- | Iterates a one step construction function (resp. deconstruction) function,
+-- i.e. a lead, thus obtaining a right fold (resp. unfold). The resulting lead
+-- is a catamorphism on one side and an anamorpism on the other, hence the name.
+-- The type of this function is the same as that of 'foldr', lifted to
+-- cassettes.
 catanar :: BinL a b b -> BinL b [a] b
 catanar (K7 f f') = K7 g g' where
     g k k' s xs@[]      z = k (\s _ -> k' s xs z) s z
@@ -32,11 +32,11 @@ catanar (K7 f f') = K7 g g' where
       f' (\k' s z x -> g' (\k' s xs' z -> k k' s (x:xs') z) (\s _ -> k' s z x) s z)
          (\s _ -> k (\s _ _ -> k' s z) s [] z) s z
 
--- | Iterates a one step construction function (resp. deconstruction)
--- function, i.e. a lead, thus obtaining a left fold (resp. unfold). The
--- resulting lead is a catamorphism on one side and an anamorpism on the
--- other, hence the name. The type of this function is the same as that of
--- 'foldl', lifted to cassettes.
+-- | Iterates a one step construction function (resp. deconstruction) function,
+-- i.e. a lead, thus obtaining a left fold (resp. unfold). The resulting lead is
+-- a catamorphism on one side and an anamorpism on the other, hence the name.
+-- The type of this function is the same as that of 'foldl', lifted to
+-- cassettes.
 catanal :: BinL a b a -> BinL a [b] a
 catanal (K7 f f') = K7 g (g' []) where
     g k k' s xs@[]      z = k (\s _ -> k' s xs z) s z

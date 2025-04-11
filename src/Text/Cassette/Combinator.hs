@@ -19,13 +19,13 @@ count :: Int -> PP a -> PP [a]
 count 0 _ = nilL
 count n p = consL --> p . count (n - 1) p
 
--- | Tries to apply the given cassette. It returns the value of the cassette
--- on success, the first argument otherwise.
+-- | Tries to apply the given cassette. It returns the value of the cassette on
+-- success, the first argument otherwise.
 option :: a -> PP a -> PP a
 option x p = p <|> shift x nothing
 
--- | Tries to apply the given cassette. It returns a value of the form @Just
--- x@ on success, @Nothing@ otherwise.
+-- | Tries to apply the given cassette. It returns a value of the form @Just x@
+-- on success, @Nothing@ otherwise.
 optionMaybe :: PP a -> PP (Maybe a)
 optionMaybe p = justL --> p <|> nothingL
 
@@ -60,10 +60,10 @@ sepBy px psep = sepBy1 px psep <|> nilL
 sepBy1 :: PP a -> PP0 -> PP [a]
 sepBy1 px psep = consL --> px . many (psep . px)
 
--- | @chainl p op x@ matches zero or more occurrences of @p@, separated by
--- @op@. Returns a value obtained by a /left associative/ application of all
--- functions returned by @op@ to the values returned by @p@. If there are zero
--- occurrences of @p@, the value @x@ is returned.
+-- | @chainl p op x@ matches zero or more occurrences of @p@, separated by @op@.
+-- Returns a value obtained by a /left associative/ application of all functions
+-- returned by @op@ to the values returned by @p@. If there are zero occurrences
+-- of @p@, the value @x@ is returned.
 chainl :: PP0 -> BinL a a a -> PP a -> a -> PP a
 chainl opP opL xP dflt = chainl1 opP opL xP <|> shift dflt nothing
 
@@ -71,8 +71,8 @@ chainl opP opL xP dflt = chainl1 opP opL xP <|> shift dflt nothing
 chainl1 :: PP0 -> BinL a a a -> PP a -> PP a
 chainl1 opP opL xP = catanal opL --> xP . many (opP . xP)
 
--- | @chainr p op x@ matches zero or more occurrences of @p@, separated by
--- @op@. Returns a value obtained by a /right associative/ application of all
+-- | @chainr p op x@ matches zero or more occurrences of @p@, separated by @op@.
+-- Returns a value obtained by a /right associative/ application of all
 -- functions returned by @op@ to the values returned by @p@. If there are zero
 -- occurrences of @p@, the value @x@ is returned.
 chainr :: PP0 -> BinL a a a -> PP a -> a -> PP a
@@ -82,8 +82,8 @@ chainr opP opL xP dflt = chainr1 opP opL xP <|> shift dflt nothing
 chainr1 :: PP0 -> BinL a a a -> PP a -> PP a
 chainr1 opP opL xP = catanar opL --> xP . many (opP . xP)
 
--- | @notFollowedBy p@ only succeeds when @p@ fails. This combinator does
--- not consume/produce any input.
+-- | @notFollowedBy p@ only succeeds when @p@ fails. This combinator does not
+-- consume/produce any input.
 notFollowedBy :: PP0 -> PP0
 notFollowedBy p = unshift () $ shift () (p . empty) <|> shift () nothing
 

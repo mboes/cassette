@@ -41,7 +41,8 @@ instance Category K7 where
 
 infixr 5 -->
 
--- | A synonym to '(.)' with its arguments flipped and with lower precedence, but higher precedence than '(<|>)'.
+-- | A synonym to '(.)' with its arguments flipped and with lower precedence,
+-- but higher precedence than '(<|>)'.
 (-->) :: K7 a b -> K7 b c -> K7 a c
 (-->) = Prelude.flip (.)
 
@@ -50,9 +51,9 @@ infixr 5 -->
 type C r = (String -> r) -> String -> r
 
 -- | The type of cassettes with a string transformer on each side. The A-side
--- produces a value in addition to transforming the string, /i.e./ it is a
--- parser. The B-side consumes a value to transform the string, /i.e./ it is a
--- printer.
+-- produces a value in addition to transforming the string, /i.e./ it is
+-- a parser. The B-side consumes a value to transform the string, /i.e./ it is
+-- a printer.
 type PP a = forall r. K7 (C (a -> r)) (C r)
 
 -- | The type of cassettes only useful for their effect on the input or output
@@ -79,16 +80,15 @@ pretty csst = play (flip csst) (const Just) (\_ _ -> Nothing) ""
 infixl 3 <|>
 
 -- | Choice operator. If the first cassette fails, then try the second parser.
--- Note that this is an unrestricted backtracking operator: it never commits
--- to any particular choice.
+-- Note that this is an unrestricted backtracking operator: it never commits to
+-- any particular choice.
 (<|>) :: PP a -> PP a -> PP a
 K7 f f' <|> K7 g g' =
   K7 (\k k' s -> f k (\_ -> g k k' s) s)
      (\k k' s x -> f' k (\_ -> g' k k' s) s x)
 
--- | Always fail. This combinator does not produce/consume any value,
--- but has a more general type than 'PP0' because it furthermore never
--- succeeds.
+-- | Always fail. This combinator does not produce/consume any value, but has
+-- a more general type than 'PP0' because it furthermore never succeeds.
 empty :: K7 (C r) (C r')
 empty = K7 (\_ k' s -> k' s) (\_ k' s -> k' s)
 
@@ -106,8 +106,8 @@ shift x ~(K7 f f') =
   K7 (\k k' -> f (\k' s -> k (\s _ -> k' s) s x) k')
      (\k k' s x -> f' k (\s -> k' s x) s)
 
--- | Turn the given cassette into a pure string transformer. That is, return a
--- cassette that does not produce an output or consume an input. @unshift x p@
+-- | Turn the given cassette into a pure string transformer. That is, return
+-- a cassette that does not produce an output or consume an input. @unshift x p@
 -- throws away the output of @p@ on the parsing side, and on the printing side
 -- sets the input to @x@.
 unshift :: a -> PP a -> PP0
@@ -123,8 +123,8 @@ write0 x = \k k' s -> write id k (\s _ -> k' s) s x
 
 -- | Strip/add the given string from/to the output string.
 string :: String -> PP0
--- We could implement 'string' in terms of many, satisfy, char and unshift,
--- but don't, purely to reduce unnecessary choice points during parsing.
+-- We could implement 'string' in terms of many, satisfy, char and unshift, but
+-- don't, purely to reduce unnecessary choice points during parsing.
 string x = K7 (\k k' s -> maybe (k' s) (k k') $ stripPrefix x s) (write0 x)
 
 -- | Successful only if predicate holds.
