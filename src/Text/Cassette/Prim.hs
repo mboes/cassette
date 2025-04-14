@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE RankNTypes #-}
 
 module Text.Cassette.Prim
@@ -58,12 +59,27 @@ flip (K7 f g) = K7 g f
 --- strings.
 type C r = (String -> r) -> String -> r
 
--- | The iterated type of string transformers.
+-- | @'Tr' r r'@ is the type of string transformers that change answer type
+-- from @r@ to @r'@ through control effects.
 newtype Tr r r' = Tr { unTr :: C r -> C r' }
 
 instance Category Tr where
   id = Tr id
   Tr f . Tr g = Tr (f . g)
+
+-- | Replace the success continuation.
+replace :: C r -> Tr r r
+replace f = Tr (\_ k' s -> (f k' s))
+
+-- | Capture continuation up to closest reset.
+shift1 :: (C r -> Tr w r') -> Tr r r'
+shift1 f = Tr (\k -> unTr (f k) id)
+
+push :: a -> Tr (a -> r) r
+push x = shift1 (\k -> replace (\k' s -> k (\s _ -> k' s) s x))
+
+pop :: Tr r (a -> r)
+pop = shift1 (\k -> replace (\k' s x -> k (\s -> k' s x) s))
 
 -- | The type of cassettes with a string transformer on each side. The A-side
 -- produces a value in addition to transforming the string, /i.e./ it is
@@ -129,18 +145,14 @@ nothing = K7 id id
 -- pure transformer. @shift x p@ produces @x@ as the output of @p@ on the
 -- parsing side, and on the printing side accepts an input that is ignored.
 shift :: a -> PP0 -> PP a
-shift x ~(K7 f f') =
-  K7 (Tr $ \k k' -> unTr f (\k' s -> k (\s _ -> k' s) s x) k')
-     (Tr $ \k k' s x -> unTr f' k (\s -> k' s x) s)
+shift x ~(K7 f f') = K7 (f . push x) (pop . f')
 
 -- | Turn the given cassette into a pure string transformer. That is, return
 -- a cassette that does not produce an output or consume an input. @unshift x p@
 -- throws away the output of @p@ on the parsing side, and on the printing side
 -- sets the input to @x@.
 unshift :: a -> PP a -> PP0
-unshift x ~(K7 f f') =
-  K7 (Tr $ \k k' -> unTr f (\k' s x -> k (\s -> k' s x) s) k')
-     (Tr $ \k k' s -> unTr f' k (\s _ -> k' s) s x)
+unshift x ~(K7 f f') = K7 (f . pop) (push x . f')
 
 write :: (a -> String) -> Tr r (a -> r)
 write f = Tr $ \k k' s x -> k (\s -> k' s x) (f x ++ s)
