@@ -83,7 +83,7 @@ chainr1 :: PP0 -> BinL a a a -> PP a -> PP a
 chainr1 opP opL xP = catanar opL --> xP . many (opP . xP)
 
 -- | @notFollowedBy p@ only succeeds when @p@ fails. This combinator does not
--- consume/produce any input.
+-- consume\/produce any input.
 notFollowedBy :: PP0 -> PP0
 notFollowedBy p = unshift () $ shift () (p . empty) <|> shift () nothing
 

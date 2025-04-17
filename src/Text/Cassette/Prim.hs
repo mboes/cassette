@@ -72,7 +72,7 @@ instance Category Tr where
 type PP a = forall r. K7 Tr (a -> r) r
 
 -- | The type of cassettes only useful for their effect on the input or output
--- strings, but do not produce/consume any value.
+-- strings, but do not produce\/consume any value.
 type PP0 = forall r. K7 Tr r r
 
 -- | Extract the parser from a cassette.
@@ -94,7 +94,7 @@ K7 f f' <|> K7 g g' =
   K7 (Tr $ \k k' s -> unTr f k (\_ -> unTr g k k' s) s)
      (Tr $ \k k' s x -> unTr f' k (\_ -> unTr g' k k' s) s x)
 
--- | Always fail. This combinator does not produce/consume any value, but has
+-- | Always fail. This combinator does not produce\/consume any value, but has
 -- a more general type than 'PP0' because it furthermore never succeeds.
 empty :: K7 Tr r r'
 empty = K7 (Tr $ \_ k' s -> k' s) (Tr $ \_ k' s -> k' s)
@@ -103,7 +103,7 @@ empty = K7 (Tr $ \_ k' s -> k' s) (Tr $ \_ k' s -> k' s)
 nothing :: PP0
 nothing = K7 id id
 
--- | Turn the given pure transformer into a parsing/printing pair. That is,
+-- | Turn the given pure transformer into a parsing\/printing pair. That is,
 -- return a cassette that produces and output on the one side, and consumes an
 -- input on the other, in addition to the string transformations of the given
 -- pure transformer. @shift x p@ produces @x@ as the output of @p@ on the
@@ -128,7 +128,7 @@ write f = Tr $ \k k' s x -> k (\s -> k' s x) (f x ++ s)
 write0 :: String -> Tr r r
 write0 x = Tr $ \k k' s -> unTr (write id) k (\s _ -> k' s) s x
 
--- | Strip/add the given string from/to the output string.
+-- | Strip\/add the given string from\/to the output string.
 string :: String -> PP0
 -- We could implement 'string' in terms of many, satisfy, char and unshift, but
 -- don't, purely to reduce unnecessary choice points during parsing.
