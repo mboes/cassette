@@ -89,6 +89,17 @@ infixl 3 <|>
 -- | Choice operator. If the first cassette fails, then try the second parser.
 -- Note that this is an unrestricted backtracking operator: it never commits to
 -- any particular choice.
+--
+-- >>> import Data.Char
+-- >>> let alphaNum = satisfy isDigit <|> satisfy isAlpha
+-- >>> parse alphaNum "ABCD"
+-- Just 'A'
+--
+-- >>> parse (satisfy isAlpha <|> shift 'B' empty) "ABCD"
+-- Just 'A'
+--
+-- >>> parse (shift 'B' empty <|> satisfy isAlpha) "ABCD"
+-- Just 'A'
 (<|>) :: PP a -> PP a -> PP a
 K7 f f' <|> K7 g g' =
   K7 (Tr $ \k k' s -> unTr f k (\_ -> unTr g k k' s) s)
@@ -96,10 +107,19 @@ K7 f f' <|> K7 g g' =
 
 -- | Always fail. This combinator does not produce\/consume any value, but has
 -- a more general type than 'PP0' because it furthermore never succeeds.
+--
+-- >>> parse (shift () empty) ""
+-- Nothing
+--
+-- >>> pretty (shift () empty) ()
+-- Nothing
 empty :: K7 Tr r r'
 empty = K7 (Tr $ \_ k' s -> k' s) (Tr $ \_ k' s -> k' s)
 
 -- | Do nothing.
+--
+-- >>> pretty (shift () nothing) ()
+-- Just ""
 nothing :: PP0
 nothing = K7 id id
 
@@ -144,13 +164,23 @@ satisfy p = K7 (Tr f) (Tr g) where
     | p x = k (\s -> k' s x) (x:s)
     | otherwise = k' s x
 
--- | Parse/print without consuming/producing any input.
+-- | Parse\/print without consuming\/producing any input.
+--
+-- >>> let spec = lookAhead (satisfy (=='A')) . string "A"
+-- >>> parse spec "ABCD"
+-- Just 'A'
 lookAhead :: PP a -> PP a
 lookAhead (K7 f f') =
   K7 (Tr $ \k k' s -> unTr f (\k' _ -> k k' s) k' s)
      (Tr $ \k k' s -> unTr f' (\k' _ -> k k' s) k' s)
 
 -- | Succeeds if input string is empty.
+--
+-- >>> parse (shift () eof) ""
+-- Just ()
+--
+-- >>> parse (shift () eof) "ABCD"
+-- Nothing
 eof :: PP0
 eof = K7 (Tr isEmpty) (Tr isEmpty) where
   isEmpty k k' "" = k k' ""
