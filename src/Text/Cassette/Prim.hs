@@ -116,10 +116,10 @@ infixl 3 <|>
 --
 -- >>> parse (shift 'B' empty <|> satisfy isAlpha) "ABCD"
 -- Just 'A'
-(<|>) :: PP a -> PP a -> PP a
+(<|>) :: K7 Tr r r' -> K7 Tr r r' -> K7 Tr r r'
 K7 f f' <|> K7 g g' =
   K7 (Tr $ \k k' s -> unTr f k (\_ -> unTr g k k' s) s)
-     (Tr $ \k k' s x -> unTr f' k (\_ -> unTr g' k k' s) s x)
+     (Tr $ \k k' s -> unTr f' k (\_ -> unTr g' k k' s) s)
 
 -- | Always fail. This combinator does not produce\/consume any value, but has
 -- a more general type than 'PP0' because it furthermore never succeeds.
