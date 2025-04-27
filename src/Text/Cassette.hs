@@ -64,11 +64,9 @@
 -- destruction function. Leads are pure combinators that do not affect the
 -- input string. By convention, we suffix their name with "L".
 --
--- Internally, the primitive combinators are written in CPS. Leads also need
--- to be written in this style, being primitive. They can, however, be
--- automatically generated for every datatype using some Template Haskell
--- hackery (in a separate package). A number of leads for standard datatypes
--- are defined in the 'Text.Cassette.Lead' module.
+-- Internally, the primitive combinators are written in CPS. Leads also need to
+-- be written in this style, being primitive. A number of leads for standard
+-- data types are defined in the 'Text.Cassette.Lead' module.
 
 module Text.Cassette (module X) where
 
