@@ -4,7 +4,6 @@
 module Text.Cassette.Prim
   ( -- * Data types
     K7(..)
-  , Tr(..)
   , PP
   , PP0
     -- * Composition
@@ -28,8 +27,10 @@ module Text.Cassette.Prim
 
 import Control.Category (Category(..))
 import Data.List (stripPrefix)
-import qualified Prelude
 import Prelude hiding (flip, id, (.))
+import Prelude qualified
+import Text.Cassette.Internal.Tr (Tr(..))
+import Text.Cassette.Internal.Tr qualified as Tr
 
 -- | A cassette consists of two tracks, represented by profunctors. The
 -- functions on each track are inverses of each other.
@@ -54,40 +55,6 @@ play csst = sideA csst
 -- | Switch the A-side and B-side around.
 flip :: K7 p a b -> K7 p b a
 flip (K7 f g) = K7 g f
-
---- | The type of string transformers in CPS, /i.e./ functions from strings to
---- strings.
-type C r = (String -> r) -> String -> r
-
--- | @'Tr' r r'@ is the type of string transformers with answer type
--- modification from @r@ to @r'@ through control effects.
-newtype Tr r r' = Tr { unTr :: C r -> C r' }
-
-instance Category Tr where
-  id = Tr id
-  Tr f . Tr g = Tr (f . g)
-
--- | Capture continuation up to the closest 'reset1'.
-shift1 :: (C r -> Tr w r') -> Tr r r'
-shift1 f = Tr (\k -> unTr (f k) id)
-
--- | Delimit what is captured by 'shift1'.
-reset1 :: Tr r r' -> C r'
-reset1 (Tr f) = f id
-
--- | Inverse of 'shift1'.
-plug1 :: C r -> Tr r r' -> Tr w r'
-plug1 k (Tr f) = Tr (\_ -> f k)
-
--- | Replace the success continuation.
-replace :: C r -> Tr w r
-replace k = plug1 k id
-
-push :: a -> Tr (a -> r) r
-push x = shift1 (\k -> replace (\k' s -> k (\s _ -> k' s) s x))
-
-pop :: Tr r (a -> r)
-pop = shift1 (\k -> replace (\k' s x -> k (\s -> k' s x) s))
 
 -- | The type of cassettes with a string transformer on each side. The A-side
 -- produces a value in addition to transforming the string, /i.e./ it is
@@ -153,14 +120,14 @@ nothing = K7 id id
 -- pure transformer. @'set' x p@ provides @x@ as the output of @p@ on the
 -- parsing side, and on the printing side accepts an input that is ignored.
 set :: a -> PP0 -> PP a
-set x ~(K7 f f') = K7 (f . push x) (pop . f')
+set x ~(K7 f f') = K7 (f . Tr.push x) (Tr.pop . f')
 
 -- | Turn the given parsing\/printing pair into a pure string transformer. That
 -- is, return a cassette that does not produce an output or consume an input.
 -- @'unset' x p@ throws away the output of @p@ on the parsing side, and on the
 -- printing side sets the input to @x@.
 unset :: a -> PP a -> PP0
-unset x ~(K7 f f') = K7 (f . pop) (push x . f')
+unset x ~(K7 f f') = K7 (f . Tr.pop) (Tr.push x . f')
 
 write :: (a -> String) -> Tr r (a -> r)
 write f = Tr $ \k k' s x -> k (\s -> k' s x) (f x ++ s)

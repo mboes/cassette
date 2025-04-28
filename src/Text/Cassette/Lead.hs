@@ -2,6 +2,7 @@
 
 module Text.Cassette.Lead where
 
+import Text.Cassette.Internal.Tr (Tr(..))
 import Text.Cassette.Prim
 
 -- | The type of unary leads, parameterized by the type of the operand and the

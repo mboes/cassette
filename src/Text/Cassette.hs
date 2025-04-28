@@ -80,3 +80,4 @@ import Text.Cassette.Prim as X
 -- $setup
 -- >>> :seti -XStandaloneDeriving -XGADTSyntax
 -- >>> import Control.Category
+-- >>> import Text.Cassette.Internal.Tr (Tr(..))
