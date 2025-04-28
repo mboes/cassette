@@ -52,7 +52,7 @@ consL =
          _ -> k' s xs)
 
 nilL :: PP [a]
-nilL = shift [] nothing
+nilL = set [] nothing
 
 justL :: UnL a (Maybe a)
 justL =
@@ -60,7 +60,7 @@ justL =
      (Tr $ \k k' s mb -> maybe (k' s mb) (k (\s _ -> k' s mb) s) mb)
 
 nothingL :: PP (Maybe a)
-nothingL = shift Nothing nothing
+nothingL = set Nothing nothing
 
 pairL :: BinL a b (a, b)
 pairL =

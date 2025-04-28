@@ -18,8 +18,8 @@ module Text.Cassette.Prim
     -- * Primitive combinators
   , empty
   , nothing
-  , shift
-  , unshift
+  , set
+  , unset
   , string
   , satisfy
   , lookAhead
@@ -119,10 +119,10 @@ infixl 3 <|>
 -- >>> parse alphaNum "ABCD"
 -- Just 'A'
 --
--- >>> parse (satisfy isAlpha <|> shift 'B' empty) "ABCD"
+-- >>> parse (satisfy isAlpha <|> set 'B' empty) "ABCD"
 -- Just 'A'
 --
--- >>> parse (shift 'B' empty <|> satisfy isAlpha) "ABCD"
+-- >>> parse (set 'B' empty <|> satisfy isAlpha) "ABCD"
 -- Just 'A'
 (<|>) :: K7 Tr r r' -> K7 Tr r r' -> K7 Tr r r'
 K7 f f' <|> K7 g g' =
@@ -132,35 +132,35 @@ K7 f f' <|> K7 g g' =
 -- | Always fail. This combinator does not produce\/consume any value, but has
 -- a more general type than 'PP0' because it furthermore never succeeds.
 --
--- >>> parse (shift () empty) ""
+-- >>> parse (set () empty) ""
 -- Nothing
 --
--- >>> pretty (shift () empty) ()
+-- >>> pretty (set () empty) ()
 -- Nothing
 empty :: K7 Tr r r'
 empty = K7 (Tr $ \_ k' s -> k' s) (Tr $ \_ k' s -> k' s)
 
 -- | Do nothing.
 --
--- >>> pretty (shift () nothing) ()
+-- >>> pretty (set () nothing) ()
 -- Just ""
 nothing :: PP0
 nothing = K7 id id
 
 -- | Turn the given pure transformer into a parsing\/printing pair. That is,
--- return a cassette that produces and output on the one side, and consumes an
+-- return a cassette that provides an output on the one side, and consumes an
 -- input on the other, in addition to the string transformations of the given
--- pure transformer. @shift x p@ produces @x@ as the output of @p@ on the
+-- pure transformer. @'set' x p@ provides @x@ as the output of @p@ on the
 -- parsing side, and on the printing side accepts an input that is ignored.
-shift :: a -> PP0 -> PP a
-shift x ~(K7 f f') = K7 (f . push x) (pop . f')
+set :: a -> PP0 -> PP a
+set x ~(K7 f f') = K7 (f . push x) (pop . f')
 
--- | Turn the given cassette into a pure string transformer. That is, return
--- a cassette that does not produce an output or consume an input. @unshift x p@
--- throws away the output of @p@ on the parsing side, and on the printing side
--- sets the input to @x@.
-unshift :: a -> PP a -> PP0
-unshift x ~(K7 f f') = K7 (f . pop) (push x . f')
+-- | Turn the given parsing\/printing pair into a pure string transformer. That
+-- is, return a cassette that does not produce an output or consume an input.
+-- @'unset' x p@ throws away the output of @p@ on the parsing side, and on the
+-- printing side sets the input to @x@.
+unset :: a -> PP a -> PP0
+unset x ~(K7 f f') = K7 (f . pop) (push x . f')
 
 write :: (a -> String) -> Tr r (a -> r)
 write f = Tr $ \k k' s x -> k (\s -> k' s x) (f x ++ s)
@@ -196,10 +196,10 @@ lookAhead (K7 f f') =
 
 -- | Succeeds if input string is empty.
 --
--- >>> parse (shift () eof) ""
+-- >>> parse (set () eof) ""
 -- Just ()
 --
--- >>> parse (shift () eof) "ABCD"
+-- >>> parse (set () eof) "ABCD"
 -- Nothing
 eof :: PP0
 eof = K7 (Tr isEmpty) (Tr isEmpty) where
