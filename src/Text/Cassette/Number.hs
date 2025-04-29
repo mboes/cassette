@@ -3,6 +3,7 @@
 module Text.Cassette.Number where
 
 import Control.Category ((.))
+import Control.Lens qualified as Lens
 import Prelude hiding ((.))
 import Text.Cassette.Char
 import Text.Cassette.Combinator
@@ -15,4 +16,4 @@ int =
     intL --> many1 digit <|>
     intL --> consL --> satisfy (== '-') . many1 digit
   where
-    intL = liftL read show
+    intL = isoL (Lens.iso show read)

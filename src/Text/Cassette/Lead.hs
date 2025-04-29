@@ -2,6 +2,7 @@
 
 module Text.Cassette.Lead where
 
+import Control.Lens qualified as Lens
 import Text.Cassette.Internal.Tr (Tr(..))
 import Text.Cassette.Prim
 
@@ -13,11 +14,20 @@ type UnL a b = forall r. K7 Tr (b -> r) (a -> r)
 -- the right operand, and the type of the result.
 type BinL a b c = forall r. K7 Tr (c -> r) (b -> a -> r)
 
--- | Lift a pair of symmetric functions to a lead.
-liftL :: (a -> b) -> (b -> a) -> UnL a b
-liftL f f' =
-    K7 (Tr $ \k k' s x -> k (\s _ -> k' s x) s (f x))
-       (Tr $ \k k' s y -> k (\s _ -> k' s y) s (f' y))
+-- | Lift an isomorphism (see the [lens](https://hackage.haskell.org/package/lens) library) to a lead.
+isoL :: Lens.Iso s s a a -> UnL a s
+isoL l =
+  K7 (Tr $ \k k' s x -> k (\s _ -> k' s x) s (Lens.view (Lens.from l) x))
+     (Tr $ \k k' s y -> k (\s _ -> k' s y) s (Lens.view l y))
+
+-- | Lift a prism (see [lens](https://hackage.haskell.org/package/lens) library) to a lead.
+prismL :: Lens.Prism s s a a -> UnL a s
+prismL l = K7 (Tr leadout) (Tr leadin)
+  where
+    leadout k k' s x = k (\s _ -> k' s x) s (Lens.review l x)
+    leadin k k' s t = case Lens.preview l t of
+      Nothing -> k' s t
+      Just x -> k (\s _ -> k' s t) s x
 
 -- | Iterates a one step construction function (resp. deconstruction) function,
 -- i.e. a lead, thus obtaining a right fold (resp. unfold). The resulting lead
