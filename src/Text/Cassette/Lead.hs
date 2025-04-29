@@ -6,22 +6,22 @@ import Control.Lens qualified as Lens
 import Text.Cassette.Internal.Tr (Tr(..))
 import Text.Cassette.Prim
 
--- | The type of unary leads, parameterized by the type of the operand and the
--- type of the result.
-type UnL a b = forall r. K7 Tr (b -> r) (a -> r)
+-- | Unary leads. A lead of type @'UnL' s a@ projects a component @a@ from outer
+-- type @s@.
+type UnL s a = forall r. K7 Tr (s -> r) (a -> r)
 
--- | The type of binary leads, parameterized by the type of the left operand,
--- the right operand, and the type of the result.
-type BinL a b c = forall r. K7 Tr (c -> r) (b -> a -> r)
+-- | Binary leads. A lead of type @'BinL' s a b@ projects components @a@, @b@
+-- from outer type @s@.
+type BinL s a b = forall r. K7 Tr (s -> r) (b -> a -> r)
 
 -- | Lift an isomorphism (see the [lens](https://hackage.haskell.org/package/lens) library) to a lead.
-isoL :: Lens.Iso s s a a -> UnL a s
+isoL :: Lens.Iso s s a a -> UnL s a
 isoL l =
   K7 (Tr $ \k k' s x -> k (\s _ -> k' s x) s (Lens.view (Lens.from l) x))
      (Tr $ \k k' s y -> k (\s _ -> k' s y) s (Lens.view l y))
 
 -- | Lift a prism (see [lens](https://hackage.haskell.org/package/lens) library) to a lead.
-prismL :: Lens.Prism s s a a -> UnL a s
+prismL :: Lens.Prism s s a a -> UnL s a
 prismL l = K7 (Tr leadout) (Tr leadin)
   where
     leadout k k' s x = k (\s _ -> k' s x) s (Lens.review l x)
@@ -34,7 +34,7 @@ prismL l = K7 (Tr leadout) (Tr leadin)
 -- is a catamorphism on one side and an anamorpism on the other, hence the name.
 -- The type of this function is the same as that of 'foldr', lifted to
 -- cassettes.
-catanar :: BinL a b b -> BinL b [a] b
+catanar :: BinL b a b -> BinL b b [a]
 catanar (K7 f f') = K7 (Tr g) (Tr g') where
     g k k' s xs@[]      z = k (\s _ -> k' s xs z) s z
     g k k' s xs@(x:xs') z =
@@ -47,7 +47,7 @@ catanar (K7 f f') = K7 (Tr g) (Tr g') where
 -- a catamorphism on one side and an anamorpism on the other, hence the name.
 -- The type of this function is the same as that of 'foldl', lifted to
 -- cassettes.
-catanal :: BinL a b a -> BinL a [b] a
+catanal :: BinL a a b -> BinL a a [b]
 catanal (K7 f f') = K7 (Tr g) (Tr $ g' []) where
     g k k' s xs@[]      z = k (\s _ -> k' s xs z) s z
     g k k' s xs@(x:xs') z =
@@ -55,7 +55,7 @@ catanal (K7 f f') = K7 (Tr g) (Tr $ g' []) where
     g' xs' k k' s z =
       unTr f' (\k' s x z -> g' (x:xs') k (\s _ -> k' s x z) s z) (\s _ -> k (\s _ _ -> k' s z) s xs' z) s z
 
-consL :: BinL a [a] [a]
+consL :: BinL [a] a [a]
 consL =
   K7 (Tr $ \k k' s xs' x -> k (\s _ -> k' s xs' x) s (x:xs'))
      (Tr $ \k k' s xs -> case xs of
@@ -65,7 +65,7 @@ consL =
 nilL :: PP [a]
 nilL = set [] nothing
 
-justL :: UnL a (Maybe a)
+justL :: UnL (Maybe a) a 
 justL =
   K7 (Tr $ \k k' s x -> k (\s _ -> k' s x) s (Just x))
      (Tr $ \k k' s mb -> maybe (k' s mb) (k (\s _ -> k' s mb) s) mb)
@@ -73,7 +73,7 @@ justL =
 nothingL :: PP (Maybe a)
 nothingL = set Nothing nothing
 
-pairL :: BinL a b (a, b)
+pairL :: BinL (a, b) a b
 pairL =
   K7 (Tr $ \k k' s x2 x1 -> k (\s _ -> k' s x2 x1) s (x1, x2))
      (Tr $ \k k' s t@(x1, x2) -> k (\s _ _ -> k' s t) s x2 x1)
