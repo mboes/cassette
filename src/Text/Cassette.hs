@@ -51,15 +51,12 @@
 --
 -- = Grammar specifications
 --
--- Specifications are built from primitive and derived combinators, which
--- affect the input string in some way. For each constructor of each datatype,
--- we need to write a /lead/, which is a pair of a construction function and a
--- destruction function. Leads are pure combinators that do not affect the
--- input string. By convention, we suffix their name with "L".
---
--- Internally, the primitive combinators are written in CPS. Leads also need to
--- be written in this style, being primitive. A number of leads for standard
--- data types are defined in the 'Text.Cassette.Lead' module.
+-- Specifications are built from primitive and derived combinators, which affect
+-- the input string in some way. For each constructor of each datatype, we need
+-- to write a /lead/, which is a pair of a construction function and
+-- a destruction function. Leads are pure combinators that do not affect the
+-- input string. By convention, we suffix their name with "L". A number of leads
+-- for standard data types are defined in the "Text.Cassette.Lead" module.
 
 module Text.Cassette (module X) where
 
