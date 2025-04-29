@@ -24,7 +24,7 @@ jobs:
         nix develop --command cabal test
     - name: Check code in documentation
       run: |
-        nix develop --command cabal doctest
+        nix develop --command cabal doctest --build-depends=lens
     - name: Generate documentation
       run: |
         nix develop --command cabal haddock
