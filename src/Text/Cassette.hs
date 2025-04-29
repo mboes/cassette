@@ -22,22 +22,22 @@
 -- definitions are mechanical), ...
 --
 -- >>> :{
--- varL = prismL _Var
--- absL = pairL . prismL _Abs
--- appL = pairL . prismL _App
+--   varL = prismL _Var
+--   absL = pairL . prismL _Abs
+--   appL = pairL . prismL _App
 -- :}
 --
 -- ... the concrete syntax for terms of the λ-calculus can be defined
 -- as follows:
 --
 -- >>> :{
--- let term :: PP Term
---     term =
---       varL --> ident <|>
---       absL --> char '^' . ident . char '.' . optSpace . term <|>
---       appL --> parens (term . sepSpace . term)
---     parens p = char '(' . p . char ')'
---     ident = consL --> letter . many alphaNum
+--   term :: PP Term
+--   term =
+--     varL --> ident <|>
+--     absL --> char '^' . ident . char '.' . optSpace . term <|>
+--     appL --> parens (term . sepSpace . term)
+--   parens p = char '(' . p . char ')'
+--   ident = consL --> letter . many alphaNum
 -- :}
 --
 -- From this single specification, we can extract a parser, using
