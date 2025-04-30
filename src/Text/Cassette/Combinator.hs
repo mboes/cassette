@@ -1,6 +1,8 @@
 {-# LANGUAGE ImpredicativeTypes #-}
 {-# LANGUAGE RankNTypes #-}
 
+-- | Commonly used generic combinators.
+
 module Text.Cassette.Combinator where
 
 import Control.Category ((.))

@@ -1,4 +1,4 @@
--- | This module exports combinators for parsing number literals.
+-- | Combinators to handle number literals.
 
 module Text.Cassette.Number where
 

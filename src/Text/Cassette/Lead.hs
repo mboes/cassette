@@ -63,6 +63,7 @@ catanal (K7 f f') = K7 (Tr g) (Tr $ g' []) where
     g' xs' k k' s z =
       unTr f' (\k' s x z -> g' (x:xs') k (\s _ -> k' s x z) s z) (\s _ -> k (\s _ _ -> k' s z) s xs' z) s z
 
+-- | '(:)' lead.
 consL :: BinL [a] a [a]
 consL =
   K7 (Tr $ \k k' s xs' x -> k (\s _ -> k' s xs' x) s (x:xs'))
@@ -70,27 +71,33 @@ consL =
          x:xs' -> k (\s _ _ -> k' s xs) s xs' x
          _ -> k' s xs)
 
+-- | '[]' lead.
 nilL :: PP [a]
 nilL = set [] nothing
 
+-- | 'Just' lead.
 justL :: UnL (Maybe a) a 
 justL =
   K7 (Tr $ \k k' s x -> k (\s _ -> k' s x) s (Just x))
      (Tr $ \k k' s mb -> maybe (k' s mb) (k (\s _ -> k' s mb) s) mb)
 
+-- | 'Nothing' lead.
 nothingL :: PP (Maybe a)
 nothingL = set Nothing nothing
 
+-- | Construct/destruct a pair.
 pairL :: BinL (a, b) a b
 pairL =
   K7 (Tr $ \k k' s x2 x1 -> k (\s _ -> k' s x2 x1) s (x1, x2))
      (Tr $ \k k' s t@(x1, x2) -> k (\s _ _ -> k' s t) s x2 x1)
 
+-- | Construct/destruct a 3-tuple.
 tripleL :: TernL (a, b, c) a b c
 tripleL =
   K7 (Tr $ \k k' s x3 x2 x1 -> k (\s _ -> k' s x3 x2 x1) s (x1, x2, x3))
      (Tr $ \k k' s t@(x1, x2, x3) -> k (\s _ _ _ -> k' s t) s x3 x2 x1)
 
+-- | Construct/destruct a 4-tuple.
 quadrupleL :: QuaternL (a, b, c, d) a b c d
 quadrupleL =
   K7 (Tr $ \k k' s x4 x3 x2 x1 -> k (\s _ -> k' s x4 x3 x2 x1) s (x1, x2, x3, x4))

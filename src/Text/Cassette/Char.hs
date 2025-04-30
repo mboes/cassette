@@ -1,5 +1,7 @@
 {-# LANGUAGE RankNTypes #-}
 
+-- | Commonly used character-oriented combinators.
+
 module Text.Cassette.Char where
 
 import Control.Category ((.))
@@ -43,26 +45,39 @@ optSpace = unset " " $ many (satisfy isSpace)
 sepSpace :: PP0
 sepSpace = string " " . skipSpace
 
--- | Parses a space character (\' \').
+-- | A single space character (\' \').
 space :: PP0
 space = char ' '
 
--- | Parses a newline character (\'\\n\').
+-- | A single newline character (\'\\n\').
 newline :: PP0
 newline = char '\n'
 
--- | Parses a tab character (\'\\t\').
+-- | A single tab character (\'\\t\').
 tab :: PP0
 tab = char '\t'
 
 upper, lower, alphaNum, letter, digit, hexDigit, octDigit, anyChar :: PP Char
 
+-- | An upper-case Unicode character.
 upper = satisfy isUpper
+
+-- | A lower-case Unicode character.
 lower = satisfy isLower
+
+-- | An alphabetic or numeric Unicode character.
 alphaNum = satisfy isAlphaNum
+
+-- | An alphabetic Unicode character.
 letter = satisfy isAlpha
+
+-- | An ASCII digit.
 digit = satisfy isDigit
+
+-- | An ASCII hexadecimal digit.
 hexDigit = satisfy isHexDigit
+
+-- | An ASCII octal digit.
 octDigit = satisfy isOctDigit
 
 -- | Any character.

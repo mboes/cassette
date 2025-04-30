@@ -1,5 +1,7 @@
 {-# LANGUAGE RankNTypes #-}
 
+-- | The primitive parser combinators.
+
 module Text.Cassette.Prim
   ( -- * Data types
     K7(..)
