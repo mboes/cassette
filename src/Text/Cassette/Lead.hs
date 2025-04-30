@@ -6,13 +6,21 @@ import Control.Lens qualified as Lens
 import Text.Cassette.Internal.Tr (Tr(..))
 import Text.Cassette.Prim
 
--- | Unary leads. A lead of type @'UnL' s a@ projects a component @a@ from outer
--- type @s@.
+-- | Unary leads. A lead of type @'UnL' s a@ projects/injects a component @a@
+-- from/into outer type @s@.
 type UnL s a = forall r. K7 Tr (s -> r) (a -> r)
 
--- | Binary leads. A lead of type @'BinL' s a b@ projects components @a@, @b@
--- from outer type @s@.
+-- | Binary leads. A lead of type @'BinL' s a b@ projects/injects components
+-- @a@, @b@ from/into outer type @s@.
 type BinL s a b = forall r. K7 Tr (s -> r) (b -> a -> r)
+
+-- | Ternary leads. A lead of type @'TernL' s a b c@ projects/injects components
+-- @a@, @b@, @c@ from/into outer type @s@.
+type TernL s a b c = forall r. K7 Tr (s -> r) (c -> b -> a -> r)
+
+-- | Quaternary leads. A lead of type @'QuaternL' s a b c d@ projects/injects
+-- components @a@, @b@, @c@, @d@ from/into outer type @s@.
+type QuaternL s a b c d = forall r. K7 Tr (s -> r) (d -> c -> b -> a -> r)
 
 -- | Lift an isomorphism (see the [lens](https://hackage.haskell.org/package/lens) library) to a lead.
 isoL :: Lens.Iso s s a a -> UnL s a
@@ -78,12 +86,12 @@ pairL =
   K7 (Tr $ \k k' s x2 x1 -> k (\s _ -> k' s x2 x1) s (x1, x2))
      (Tr $ \k k' s t@(x1, x2) -> k (\s _ _ -> k' s t) s x2 x1)
 
-tripleL :: K7 Tr ((a,b,c) -> r) (c -> b -> a -> r)
+tripleL :: TernL (a, b, c) a b c
 tripleL =
   K7 (Tr $ \k k' s x3 x2 x1 -> k (\s _ -> k' s x3 x2 x1) s (x1, x2, x3))
      (Tr $ \k k' s t@(x1, x2, x3) -> k (\s _ _ _ -> k' s t) s x3 x2 x1)
 
-quadrupleL :: K7 Tr ((a,b,c,d) -> r) (d -> c -> b -> a -> r)
+quadrupleL :: QuaternL (a, b, c, d) a b c d
 quadrupleL =
   K7 (Tr $ \k k' s x4 x3 x2 x1 -> k (\s _ -> k' s x4 x3 x2 x1) s (x1, x2, x3, x4))
      (Tr $ \k k' s t@(x1, x2, x3, x4) -> k (\s _ _ _ _ -> k' s t) s x4 x3 x2 x1)
