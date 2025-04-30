@@ -6,6 +6,9 @@ import Control.Lens qualified as Lens
 import Text.Cassette.Internal.Tr (Tr(..))
 import Text.Cassette.Prim
 
+-- | Nullary leads. Synonym to 'PP'.
+type NullL s = forall r. K7 Tr (s -> r) r
+
 -- | Unary leads. A lead of type @'UnL' s a@ projects/injects a component @a@
 -- from/into outer type @s@.
 type UnL s a = forall r. K7 Tr (s -> r) (a -> r)
