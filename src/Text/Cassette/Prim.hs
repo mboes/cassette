@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE RankNTypes #-}
 
 -- | The primitive parser combinators.
@@ -10,14 +12,12 @@ module Text.Cassette.Prim
   , PP0
     -- * Composition
   , (-->)
-  , (<|>)
     -- * Extraction
   , play
   , flip
   , parse
   , pretty
     -- * Primitive combinators
-  , empty
   , nothing
   , set
   , unset
@@ -38,15 +38,21 @@ import Text.Cassette.Internal.Tr qualified as Tr
 -- functions on each track are inverses of each other.
 data K7 p a b = K7 { sideA :: p a b, sideB :: p b a }
 
+instance (forall r r'. Semigroup (p r r')) => Semigroup (K7 p r r') where
+  K7 f f' <> K7 g g' = K7 (f <> g) (f' <> g')
+
+instance (forall r r'. Monoid (p r r')) => Monoid (K7 p r r') where
+  mempty = K7 mempty mempty
+
 instance Category p => Category (K7 p) where
   id = K7 id id
   -- Irrefutable patterns to support definitions of combinators by coinduction.
   ~(K7 f f') . ~(K7 g g') = K7 (f . g) (g' . f')
 
-infixr 5 -->
+infixr 7 -->
 
 -- | A synonym to '(.)' with its arguments flipped and with lower precedence,
--- but higher precedence than '(<|>)'.
+-- but higher precedence than '(<>)'.
 (-->) :: Category p => K7 p a b -> K7 p b c -> K7 p a c
 (-->) = Prelude.flip (.)
 
@@ -75,39 +81,6 @@ parse csst = unTr (play csst) (\_ _ x -> Just x) (const Nothing)
 -- | Flip the cassette around to extract the pretty printer.
 pretty :: PP a -> a -> Maybe String
 pretty csst = unTr (play (flip csst)) (const Just) (\_ _ -> Nothing) ""
-
--- Use same priority and associativity as in base.
-infixl 3 <|>
-
--- | Choice operator. If the first cassette fails, then try the second parser.
--- Note that this is an unrestricted backtracking operator: it never commits to
--- any particular choice.
---
--- >>> import Data.Char
--- >>> let alphaNum = satisfy isDigit <|> satisfy isAlpha
--- >>> parse alphaNum "ABCD"
--- Just 'A'
---
--- >>> parse (satisfy isAlpha <|> set 'B' empty) "ABCD"
--- Just 'A'
---
--- >>> parse (set 'B' empty <|> satisfy isAlpha) "ABCD"
--- Just 'A'
-(<|>) :: K7 Tr r r' -> K7 Tr r r' -> K7 Tr r r'
-K7 f f' <|> K7 g g' =
-  K7 (Tr $ \k k' s -> unTr f k (\_ -> unTr g k k' s) s)
-     (Tr $ \k k' s -> unTr f' k (\_ -> unTr g' k k' s) s)
-
--- | Always fail. This combinator does not produce\/consume any value, but has
--- a more general type than 'PP0' because it furthermore never succeeds.
---
--- >>> parse (set () empty) ""
--- Nothing
---
--- >>> pretty (set () empty) ()
--- Nothing
-empty :: K7 Tr r r'
-empty = K7 (Tr $ \_ k' s -> k' s) (Tr $ \_ k' s -> k' s)
 
 -- | Do nothing.
 --

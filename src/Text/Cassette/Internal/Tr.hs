@@ -15,6 +15,15 @@ instance Category Tr where
   id = Tr id
   Tr f . Tr g = Tr (f . g)
 
+-- | '(<>)' is the choice operator. Note that this is an unrestricted
+-- backtracking operator: it never commits to any particular choice.
+instance Semigroup (Tr r r') where
+  Tr f <> Tr g = Tr $ \k k' s -> f k (\_ -> g k k' s) s
+
+-- | 'mempty' is the string transformer that always fails.
+instance Monoid (Tr r r') where
+  mempty = Tr $ \_ k' s -> k' s
+
 -- | Capture continuation up to the closest 'reset'.
 shift :: (C r -> Tr w r') -> Tr r r'
 shift f = Tr (\k -> unTr (f k) id)

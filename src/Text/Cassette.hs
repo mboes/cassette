@@ -33,8 +33,8 @@
 -- >>> :{
 --   term :: PP Term
 --   term =
---     varL --> ident <|>
---     absL --> char '^' . ident . char '.' . optSpace . term <|>
+--     varL --> ident <>
+--     absL --> char '^' . ident . char '.' . optSpace . term <>
 --     appL --> parens (term . sepSpace . term)
 --   parens p = char '(' . p . char ')'
 --   ident = consL --> letter . many alphaNum
