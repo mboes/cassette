@@ -5,6 +5,7 @@
 module Text.Cassette.Prim
   ( -- * Data types
     K7(..)
+  , Tr
   , PP
   , PP0
     -- * Composition
