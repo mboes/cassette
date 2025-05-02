@@ -118,13 +118,14 @@ string x = K7 (Tr $ \k k' s -> maybe (k' s) (k k') $ stripPrefix x s) (write0 x)
 
 -- | Successful only if predicate holds.
 satisfy :: (Char -> Bool) -> PP Char
-satisfy p = K7 (Tr f) (Tr g) where
-  f k k' (x:xs)
-    | p x = k (\s _ -> k' s) xs x
-  f _ k' s = k' s
-  g k k' s x
-    | p x = k (\s -> k' s x) (x:s)
-    | otherwise = k' s x
+satisfy p = K7 (Tr f) (Tr f')
+  where
+    f k k' (x:xs)
+      | p x = k (\s _ -> k' s) xs x
+    f _ k' s = k' s
+    f' k k' s x
+      | p x = k (\s -> k' s x) (x:s)
+      | otherwise = k' s x
 
 -- | Parse\/print without consuming\/producing any input.
 --
@@ -132,9 +133,10 @@ satisfy p = K7 (Tr f) (Tr g) where
 -- >>> parse spec "ABCD"
 -- Just 'A'
 lookAhead :: PP a -> PP a
-lookAhead (K7 f f') =
-  K7 (Tr $ \k k' s -> unTr f (\k' _ -> k k' s) k' s)
-     (Tr $ \k k' s -> unTr f' (\k' _ -> k k' s) k' s)
+lookAhead (K7 (Tr f) (Tr f')) = K7 (Tr g) (Tr g')
+  where
+    g k k' s = f (\k' _ -> k k' s) k' s
+    g' k k' s = f' (\k' _ -> k k' s) k' s
 
 -- | Succeeds if input string is empty.
 --
@@ -144,6 +146,7 @@ lookAhead (K7 f f') =
 -- >>> parse (set () eof) "ABCD"
 -- Nothing
 eof :: PP0
-eof = K7 (Tr isEmpty) (Tr isEmpty) where
-  isEmpty k k' "" = k k' ""
-  isEmpty _ k' s  = k' s
+eof = K7 (Tr isEmpty) (Tr isEmpty)
+  where
+    isEmpty k k' "" = k k' ""
+    isEmpty _ k' s  = k' s

@@ -25,13 +25,16 @@ type TernL s a b c = forall r. K7 Tr (s -> r) (c -> b -> a -> r)
 -- components @a@, @b@, @c@, @d@ from/into outer type @s@.
 type QuaternL s a b c d = forall r. K7 Tr (s -> r) (d -> c -> b -> a -> r)
 
--- | Lift an isomorphism (see the [lens](https://hackage.haskell.org/package/lens) library) to a lead.
+-- | Lift an isomorphism (see the
+-- [lens](https://hackage.haskell.org/package/lens) library) to a lead.
 isoL :: Lens.Iso s s a a -> UnL s a
-isoL l =
-  K7 (Tr $ \k k' s x -> k (\s _ -> k' s x) s (Lens.view (Lens.from l) x))
-     (Tr $ \k k' s y -> k (\s _ -> k' s y) s (Lens.view l y))
+isoL l = K7 (Tr leadout) (Tr leadin)
+  where
+    leadout k k' s x = k (\s _ -> k' s x) s (Lens.view (Lens.from l) x)
+    leadin k k' s t = k (\s _ -> k' s t) s (Lens.view l t)
 
--- | Lift a prism (see [lens](https://hackage.haskell.org/package/lens) library) to a lead.
+-- | Lift a prism (see [lens](https://hackage.haskell.org/package/lens) library)
+-- to a lead.
 prismL :: Lens.Prism s s a a -> UnL s a
 prismL l = K7 (Tr leadout) (Tr leadin)
   where
@@ -46,12 +49,13 @@ prismL l = K7 (Tr leadout) (Tr leadin)
 -- The type of this function is the same as that of 'foldr', lifted to
 -- cassettes.
 catanar :: BinL b a b -> BinL b b [a]
-catanar (K7 f f') = K7 (Tr g) (Tr g') where
+catanar (K7 (Tr f) (Tr f')) = K7 (Tr g) (Tr g')
+  where
     g k k' s xs@[]      z = k (\s _ -> k' s xs z) s z
     g k k' s xs@(x:xs') z =
-      g (\k' s z -> unTr f k (\s _ _ -> k' s z) s z x) (\s _ _ -> k' s xs z) s xs' z
+      g (\k' s z -> f k (\s _ _ -> k' s z) s z x) (\s _ _ -> k' s xs z) s xs' z
     g' k k' s z =
-      unTr f' (\k' s z x -> g' (\k' s xs' z -> k k' s (x:xs') z) (\s _ -> k' s z x) s z) (\s _ -> k (\s _ _ -> k' s z) s [] z) s z
+      f' (\k' s z x -> g' (\k' s xs' z -> k k' s (x:xs') z) (\s _ -> k' s z x) s z) (\s _ -> k (\s _ _ -> k' s z) s [] z) s z
 
 -- | Iterates a one step construction function (resp. deconstruction) function,
 -- i.e. a lead, thus obtaining a left fold (resp. unfold). The resulting lead is
@@ -59,20 +63,21 @@ catanar (K7 f f') = K7 (Tr g) (Tr g') where
 -- The type of this function is the same as that of 'foldl', lifted to
 -- cassettes.
 catanal :: BinL a a b -> BinL a a [b]
-catanal (K7 f f') = K7 (Tr g) (Tr $ g' []) where
+catanal (K7 (Tr f) (Tr f')) = K7 (Tr g) (Tr (g' []))
+  where
     g k k' s xs@[]      z = k (\s _ -> k' s xs z) s z
     g k k' s xs@(x:xs') z =
-      unTr f (\k' s z -> g k (\s _ _ -> k' s z) s xs' z) (\s _ _ -> k' s xs z) s x z
+      f (\k' s z -> g k (\s _ _ -> k' s z) s xs' z) (\s _ _ -> k' s xs z) s x z
     g' xs' k k' s z =
-      unTr f' (\k' s x z -> g' (x:xs') k (\s _ -> k' s x z) s z) (\s _ -> k (\s _ _ -> k' s z) s xs' z) s z
+      f' (\k' s x z -> g' (x:xs') k (\s _ -> k' s x z) s z) (\s _ -> k (\s _ _ -> k' s z) s xs' z) s z
 
 -- | '(:)' lead.
 consL :: BinL [a] a [a]
-consL =
-  K7 (Tr $ \k k' s xs' x -> k (\s _ -> k' s xs' x) s (x:xs'))
-     (Tr $ \k k' s xs -> case xs of
-         x:xs' -> k (\s _ _ -> k' s xs) s xs' x
-         _ -> k' s xs)
+consL = K7 (Tr leadout) (Tr leadin)
+  where
+    leadout k k' s xs' x = k (\s _ -> k' s xs' x) s (x:xs')
+    leadin k k' s (x:xs) = k (\s _ _ -> k' s xs) s xs x
+    leadin _ k' s xs = k' s xs
 
 -- | '[]' lead.
 nilL :: PP [a]
@@ -80,9 +85,10 @@ nilL = set [] nothing
 
 -- | 'Just' lead.
 justL :: UnL (Maybe a) a 
-justL =
-  K7 (Tr $ \k k' s x -> k (\s _ -> k' s x) s (Just x))
-     (Tr $ \k k' s mb -> maybe (k' s mb) (k (\s _ -> k' s mb) s) mb)
+justL = K7 (Tr leadout) (Tr leadin)
+  where
+    leadout k k' s x = k (\s _ -> k' s x) s (Just x)
+    leadin k k' s mb = maybe (k' s mb) (k (\s _ -> k' s mb) s) mb
 
 -- | 'Nothing' lead.
 nothingL :: PP (Maybe a)
@@ -90,18 +96,21 @@ nothingL = set Nothing nothing
 
 -- | Construct/destruct a pair.
 pairL :: BinL (a, b) a b
-pairL =
-  K7 (Tr $ \k k' s x2 x1 -> k (\s _ -> k' s x2 x1) s (x1, x2))
-     (Tr $ \k k' s t@(x1, x2) -> k (\s _ _ -> k' s t) s x2 x1)
+pairL = K7 (Tr leadout) (Tr leadin)
+  where
+    leadout k k' s x2 x1 = k (\s _ -> k' s x2 x1) s (x1, x2)
+    leadin k k' s t@(x1, x2) = k (\s _ _ -> k' s t) s x2 x1
 
 -- | Construct/destruct a 3-tuple.
 tripleL :: TernL (a, b, c) a b c
-tripleL =
-  K7 (Tr $ \k k' s x3 x2 x1 -> k (\s _ -> k' s x3 x2 x1) s (x1, x2, x3))
-     (Tr $ \k k' s t@(x1, x2, x3) -> k (\s _ _ _ -> k' s t) s x3 x2 x1)
+tripleL = K7 (Tr leadout) (Tr leadin)
+  where
+    leadout k k' s x3 x2 x1 = k (\s _ -> k' s x3 x2 x1) s (x1, x2, x3)
+    leadin k k' s t@(x1, x2, x3) = k (\s _ _ _ -> k' s t) s x3 x2 x1
 
 -- | Construct/destruct a 4-tuple.
 quadrupleL :: QuaternL (a, b, c, d) a b c d
-quadrupleL =
-  K7 (Tr $ \k k' s x4 x3 x2 x1 -> k (\s _ -> k' s x4 x3 x2 x1) s (x1, x2, x3, x4))
-     (Tr $ \k k' s t@(x1, x2, x3, x4) -> k (\s _ _ _ _ -> k' s t) s x4 x3 x2 x1)
+quadrupleL = K7 (Tr leadout) (Tr leadin)
+  where
+    leadout k k' s x4 x3 x2 x1 = k (\s _ -> k' s x4 x3 x2 x1) s (x1, x2, x3, x4)
+    leadin k k' s t@(x1, x2, x3, x4) = k (\s _ _ _ _ -> k' s t) s x4 x3 x2 x1
