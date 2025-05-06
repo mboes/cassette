@@ -76,7 +76,7 @@ consL :: BinL [a] a [a]
 consL = K7 (Tr leadout) (Tr leadin)
   where
     leadout k k' s xs' x = k (\s _ -> k' s xs' x) s (x:xs')
-    leadin k k' s (x:xs) = k (\s _ _ -> k' s xs) s xs x
+    leadin k k' s xs@(x:xs') = k (\s _ _ -> k' s xs) s xs' x
     leadin _ k' s xs = k' s xs
 
 -- | '[]' lead.
