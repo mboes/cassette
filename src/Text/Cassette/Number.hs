@@ -13,7 +13,7 @@ import Text.Cassette.Prim
 -- | An integer literal, positive or negative.
 int :: PP Int
 int =
-    intL --> many1 digit <>
-    intL --> consL --> satisfy (== '-') . many1 digit
+    intL --> some digit <>
+    intL --> consL --> satisfy (== '-') . some digit
   where
     intL = isoL (Lens.iso show read)

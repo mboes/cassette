@@ -38,19 +38,19 @@ optional p = unset [] (count 1 p <> count 0 p)
 
 -- | Apply the given cassette zero or more times.
 many :: PP a -> PP [a]
-many p = many1 p <> nilL
+many p = some p <> nilL
 
 -- | Apply the given cassette one or more times.
-many1 :: PP a -> PP [a]
-many1 p = consL --> p . many p
+some :: PP a -> PP [a]
+some p = consL --> p . many p
 
 -- | Apply the given cassette zero or more times, discarding the result.
 skipMany :: PP a -> PP0
 skipMany p = unset [] $ many p
 
 -- | Apply the given cassette one or more times, discarding the result.
-skipMany1 :: PP a -> PP0
-skipMany1 p = unset [] $ many1 p
+skipSome :: PP a -> PP0
+skipSome p = unset [] $ some p
 
 -- | Apply the first argument zero or more times, separated by the second
 -- argument.
