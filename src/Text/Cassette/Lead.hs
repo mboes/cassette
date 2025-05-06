@@ -81,18 +81,27 @@ consL = K7 (Tr leadout) (Tr leadin)
 
 -- | '[]' lead.
 nilL :: PP [a]
-nilL = set [] nothing
+nilL = K7 (Tr leadout) (Tr leadin)
+  where
+    leadout k k' s = k (\s _ -> k' s) s []
+    leadin k k' s xs@[] = k (\s -> k' s xs) s
+    leadin _ k' s xs = k' s xs
 
 -- | 'Just' lead.
 justL :: UnL (Maybe a) a 
 justL = K7 (Tr leadout) (Tr leadin)
   where
     leadout k k' s x = k (\s _ -> k' s x) s (Just x)
-    leadin k k' s mb = maybe (k' s mb) (k (\s _ -> k' s mb) s) mb
+    leadin k k' s mb@(Just x) = k (\s _ -> k' s mb) s x
+    leadin _ k' s mb = k' s mb
 
 -- | 'Nothing' lead.
 nothingL :: PP (Maybe a)
-nothingL = set Nothing nothing
+nothingL = K7 (Tr leadout) (Tr leadin)
+  where
+    leadout k k' s = k (\s _ -> k' s) s Nothing
+    leadin k k' s mb@Nothing = k (\s -> k' s mb) s
+    leadin _ k' s mb = k' s mb
 
 -- | Construct/destruct a pair.
 pairL :: BinL (a, b) a b
