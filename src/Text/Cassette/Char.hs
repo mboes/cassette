@@ -43,7 +43,7 @@ optSpace = unset " " $ many (satisfy isSpace)
 -- requires one or more space characters while parsing, and produces a single
 -- space character while printing.
 sepSpace :: PP0
-sepSpace = string " " . skipSpace
+sepSpace = space . skipSpace
 
 -- | A single space character (\' \').
 space :: PP0
