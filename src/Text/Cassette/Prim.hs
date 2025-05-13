@@ -87,7 +87,7 @@ pretty csst = unTr (play (flip csst)) (const Just) (\_ _ -> Nothing) ""
 -- >>> pretty (set () nothing) ()
 -- Just ""
 nothing :: PP0
-nothing = K7 id id
+nothing = id
 
 -- | Turn the given pure transformer into a parsing\/printing pair. That is,
 -- return a cassette that provides an output on the one side, and consumes an
