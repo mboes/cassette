@@ -17,6 +17,8 @@ module Text.Cassette.Prim
   , flip
   , parse
   , pretty
+  , sscanf
+  , sprintf
     -- * Primitive combinators
   , nothing
   , set
@@ -81,6 +83,27 @@ parse csst = unTr (play csst) (\_ _ x -> Just x) (const Nothing)
 -- | Flip the cassette around to extract the pretty printer.
 pretty :: PP a -> a -> Maybe String
 pretty csst = unTr (play (flip csst)) (const Just) (\_ _ -> Nothing) ""
+
+-- | An equivalent to @sscanf()@ in C: @'sscanf' fmt k s@ extracts data from
+-- string @s@ according to format descriptor @fmt@ and hands the data to
+-- continuation @k@.
+--
+-- >>> spec = satisfy (=='A') . satisfy (=='B') . satisfy (=='C')
+-- >>> k c b a = (a, b, c)
+-- >>> sscanf spec k "ABC"
+-- ('A','B','C')
+sscanf :: K7 Tr r r' -> r -> String -> r'
+sscanf csst k = unTr (play csst) (\_ _ -> k) (\_ -> error "sscanf: formatting error")
+
+-- | An equivalent to @sprintf()@ in C: @'sprintf' fmt@ returns a function that
+-- returns a string and whose number of arguments depends on format descriptor
+-- @fmt@.
+--
+-- >>> spec = satisfy (=='A') . satisfy (=='B') . satisfy (=='C')
+-- >>> sprintf spec 'C' 'B' 'A'
+-- "ABC"
+sprintf :: K7 Tr r String -> r
+sprintf csst = unTr (play (flip csst)) (\_ -> id) (\_ -> error "sprintf: formatting error") ""
 
 -- | Do nothing.
 --
