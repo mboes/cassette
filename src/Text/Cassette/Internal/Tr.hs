@@ -28,10 +28,6 @@ instance Monoid (Tr r r') where
 shift :: (C r -> Tr w r') -> Tr r r'
 shift f = Tr (\k -> unTr (f k) id)
 
--- | Delimit what is captured by 'shift'.
-reset :: Tr r r' -> C r'
-reset (Tr f) = f id
-
 -- | Inverse of 'shift'.
 plug :: C r -> Tr r r' -> Tr w r'
 plug k (Tr f) = Tr (\_ -> f k)
