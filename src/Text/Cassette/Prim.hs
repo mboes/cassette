@@ -34,8 +34,8 @@ import Prelude hiding (flip, id, (.))
 import Text.Cassette.Internal.Tr (Tr(..))
 import Text.Cassette.Internal.Tr qualified as Tr
 
--- | A cassette consists of two tracks, represented by profunctors. The
--- functions on each track are inverses of each other.
+-- | A cassette consists of two tracks, represented by profunctors. The second
+-- track has its polarities flipped relative to the first.
 data K7 p a b = K7
   { sideA :: p a b
   , sideB :: forall t. p (a -> t) (b -> t)
