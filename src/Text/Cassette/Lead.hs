@@ -27,10 +27,10 @@ type QuaternL s a b c d = forall r. K7 Tr (s -> r) (d -> c -> b -> a -> r)
 
 -- | Lift an isomorphism (see the
 -- [lens](https://hackage.haskell.org/package/lens) library) to a lead.
-isoL :: Lens.Iso s s a a -> UnL s a
+isoL :: forall s a. Lens.Iso s s a a -> UnL s a
 isoL l = K7 (Tr leadout) (Tr leadin)
   where
-    leadout k k' s x = k (\s _ -> k' s x) s (Lens.view (Lens.from l) x)
+    leadout k k' s u = k (\s _ -> k' s u) s (\x -> u (Lens.view (Lens.from l) x))
     leadin k k' s t = k (\s _ -> k' s t) s (Lens.view l t)
 
 -- | Lift a prism (see [lens](https://hackage.haskell.org/package/lens) library)
@@ -38,7 +38,7 @@ isoL l = K7 (Tr leadout) (Tr leadin)
 prismL :: Lens.Prism s s a a -> UnL s a
 prismL l = K7 (Tr leadout) (Tr leadin)
   where
-    leadout k k' s x = k (\s _ -> k' s x) s (Lens.review l x)
+    leadout k k' s u = k (\s _ -> k' s u) s (\x -> u (Lens.review l x))
     leadin k k' s t = case Lens.preview l t of
       Nothing -> k' s t
       Just x -> k (\s _ -> k' s t) s x
@@ -77,7 +77,7 @@ catanal _ = error "unimplemented"
 consL :: BinL [a] a [a]
 consL = K7 (Tr leadout) (Tr leadin)
   where
-    leadout k k' s xs' x = k (\s _ -> k' s xs' x) s (x:xs')
+    leadout k k' s u = k (\s _ -> k' s u) s (\xs' x -> u (x:xs'))
     leadin k k' s xs@(x:xs') = k (\s _ _ -> k' s xs) s xs' x
     leadin _ k' s xs = k' s xs
 
@@ -85,7 +85,7 @@ consL = K7 (Tr leadout) (Tr leadin)
 nilL :: PP [a]
 nilL = K7 (Tr leadout) (Tr leadin)
   where
-    leadout k k' s = k (\s _ -> k' s) s []
+    leadout k k' s u = k (\s _ -> k' s u) s (u [])
     leadin k k' s xs@[] = k (\s -> k' s xs) s
     leadin _ k' s xs = k' s xs
 
@@ -93,7 +93,7 @@ nilL = K7 (Tr leadout) (Tr leadin)
 justL :: UnL (Maybe a) a 
 justL = K7 (Tr leadout) (Tr leadin)
   where
-    leadout k k' s x = k (\s _ -> k' s x) s (Just x)
+    leadout k k' s u = k (\s _ -> k' s u) s (\x -> u (Just x))
     leadin k k' s mb@(Just x) = k (\s _ -> k' s mb) s x
     leadin _ k' s mb = k' s mb
 
@@ -101,7 +101,7 @@ justL = K7 (Tr leadout) (Tr leadin)
 nothingL :: PP (Maybe a)
 nothingL = K7 (Tr leadout) (Tr leadin)
   where
-    leadout k k' s = k (\s _ -> k' s) s Nothing
+    leadout k k' s u = k (\s _ -> k' s u) s (u Nothing)
     leadin k k' s mb@Nothing = k (\s -> k' s mb) s
     leadin _ k' s mb = k' s mb
 
@@ -109,19 +109,19 @@ nothingL = K7 (Tr leadout) (Tr leadin)
 pairL :: BinL (a, b) a b
 pairL = K7 (Tr leadout) (Tr leadin)
   where
-    leadout k k' s x2 x1 = k (\s _ -> k' s x2 x1) s (x1, x2)
+    leadout k k' s u = k (\s _ -> k' s u) s (\x2 x1 -> u (x1, x2))
     leadin k k' s t@(x1, x2) = k (\s _ _ -> k' s t) s x2 x1
 
 -- | Construct/destruct a 3-tuple.
 tripleL :: TernL (a, b, c) a b c
 tripleL = K7 (Tr leadout) (Tr leadin)
   where
-    leadout k k' s x3 x2 x1 = k (\s _ -> k' s x3 x2 x1) s (x1, x2, x3)
+    leadout k k' s u = k (\s _ -> k' s u) s (\x3 x2 x1 -> u (x1, x2, x3))
     leadin k k' s t@(x1, x2, x3) = k (\s _ _ _ -> k' s t) s x3 x2 x1
 
 -- | Construct/destruct a 4-tuple.
 quadrupleL :: QuaternL (a, b, c, d) a b c d
 quadrupleL = K7 (Tr leadout) (Tr leadin)
   where
-    leadout k k' s x4 x3 x2 x1 = k (\s _ -> k' s x4 x3 x2 x1) s (x1, x2, x3, x4)
+    leadout k k' s u = k (\s _ -> k' s u) s (\x4 x3 x2 x1 -> u (x1, x2, x3, x4))
     leadin k k' s t@(x1, x2, x3, x4) = k (\s _ _ _ _ -> k' s t) s x4 x3 x2 x1

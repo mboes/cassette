@@ -13,8 +13,6 @@ module Text.Cassette.Prim
     -- * Composition
   , (-->)
     -- * Extraction
-  , play
-  , flip
   , parse
   , pretty
   , sscanf
@@ -39,7 +37,10 @@ import Text.Cassette.Internal.Tr qualified as Tr
 
 -- | A cassette consists of two tracks, represented by profunctors. The
 -- functions on each track are inverses of each other.
-data K7 p a b = K7 { sideA :: p a b, sideB :: p b a }
+data K7 p a b = K7
+  { sideA :: forall t. p (b -> t) (a -> t)
+  , sideB :: p b a
+  }
 
 instance (forall r r'. Semigroup (p r r')) => Semigroup (K7 p r r') where
   K7 f f' <> K7 g g' = K7 (f <> g) (f' <> g')
@@ -50,7 +51,7 @@ instance (forall r r'. Monoid (p r r')) => Monoid (K7 p r r') where
 instance Category p => Category (K7 p) where
   id = K7 id id
   -- Irrefutable patterns to support definitions of combinators by coinduction.
-  ~(K7 f f') . ~(K7 g g') = K7 (f . g) (g' . f')
+  ~(K7 f f') . ~(K7 g g') = K7 (g . f) (g' . f')
 
 infixr 7 -->
 
@@ -58,14 +59,6 @@ infixr 7 -->
 -- but higher precedence than '(<>)'.
 (-->) :: Category p => K7 p a b -> K7 p b c -> K7 p a c
 (-->) = Prelude.flip (.)
-
--- | Select the A-side.
-play :: K7 p a b -> p a b
-play csst = sideA csst
-
--- | Switch the A-side and B-side around.
-flip :: K7 p a b -> K7 p b a
-flip (K7 f g) = K7 g f
 
 -- | The type of cassettes with a string transformer on each side. The A-side
 -- produces a value in addition to transforming the string, /i.e./ it is
@@ -79,11 +72,11 @@ type PP0 = forall r. K7 Tr r r
 
 -- | Extract the parser from a cassette.
 parse :: PP a -> String -> Maybe a
-parse csst = unTr (play csst) (\_ _ x -> Just x) (const Nothing)
+parse (K7 f _) s = unTr f (\_ _ x -> Just x) (\_ _ -> Nothing) s id
 
 -- | Flip the cassette around to extract the pretty printer.
 pretty :: PP a -> a -> Maybe String
-pretty csst = unTr (play (flip csst)) (const Just) (\_ _ -> Nothing) ""
+pretty (K7 _ f') = unTr f' (const Just) (\_ _ -> Nothing) ""
 
 -- | An equivalent to @sscanf()@ in C: @'sscanf' fmt k s@ extracts data from
 -- string @s@ according to format descriptor @fmt@ and hands the data to
@@ -94,7 +87,9 @@ pretty csst = unTr (play (flip csst)) (const Just) (\_ _ -> Nothing) ""
 -- >>> sscanf spec k "ABC"
 -- ('A','B','C')
 sscanf :: HasCallStack => K7 Tr r r' -> r -> String -> r'
-sscanf csst k = unTr (play csst) (\_ _ -> k) (\_ -> error "sscanf: formatting error")
+sscanf (K7 f _) k s = unTr f (\_ _ -> id) (\_ _ -> error msg) s k
+  where
+    msg = "sscanf: formatting error"
 
 -- | An equivalent to @sprintf()@ in C: @'sprintf' fmt@ returns a function that
 -- returns a string and whose number of arguments depends on format descriptor
@@ -104,7 +99,9 @@ sscanf csst k = unTr (play csst) (\_ _ -> k) (\_ -> error "sscanf: formatting er
 -- >>> sprintf spec 'C' 'B' 'A'
 -- "ABC"
 sprintf :: HasCallStack => K7 Tr r String -> r
-sprintf csst = unTr (play (flip csst)) (\_ -> id) (\_ -> error "sprintf: formatting error") ""
+sprintf (K7 _ f') = unTr f' (\_ -> id) (\_ -> error msg) ""
+  where
+    msg = "sprintf: formatting error"
 
 -- | Do nothing.
 --
@@ -119,14 +116,14 @@ nothing = id
 -- pure transformer. @'set' x p@ provides @x@ as the output of @p@ on the
 -- parsing side, and on the printing side accepts an input that is ignored.
 set :: a -> PP0 -> PP a
-set x ~(K7 f f') = K7 (f . Tr.push x) (Tr.pop . f')
+set x ~(K7 f f') = K7 (Tr.push' x . f) (Tr.pop . f')
 
 -- | Turn the given parsing\/printing pair into a pure string transformer. That
 -- is, return a cassette that does not produce an output or consume an input.
 -- @'unset' x p@ throws away the output of @p@ on the parsing side, and on the
 -- printing side sets the input to @x@.
 unset :: a -> PP a -> PP0
-unset x ~(K7 f f') = K7 (f . Tr.pop) (Tr.push x . f')
+unset x ~(K7 f f') = K7 (Tr.pop' . f) (Tr.push x . f')
 
 write :: (a -> String) -> Tr r (a -> r)
 write f = Tr $ \k k' s x -> k (\s -> k' s x) (f x ++ s)
@@ -144,9 +141,9 @@ string x = K7 (Tr $ \k k' s -> maybe (k' s) (k k') $ stripPrefix x s) (write0 x)
 satisfy :: (Char -> Bool) -> PP Char
 satisfy p = K7 (Tr f) (Tr f')
   where
-    f k k' (x:xs)
-      | p x = k (\s _ -> k' s) xs x
-    f _ k' s = k' s
+    f k k' (c:cs) u
+      | p c = k (\cs _ -> k' cs u) cs (u c)
+    f _ k' s u = k' s u
     f' k k' s x
       | p x = k (\s -> k' s x) (x:s)
       | otherwise = k' s x
@@ -157,10 +154,10 @@ satisfy p = K7 (Tr f) (Tr f')
 -- >>> parse spec "ABCD"
 -- Just 'A'
 lookAhead :: PP a -> PP a
-lookAhead (K7 (Tr f) (Tr f')) = K7 (Tr g) (Tr g')
+lookAhead csst = K7 (Tr g) (Tr g')
   where
-    g k k' s = f (\k' _ -> k k' s) k' s
-    g' k k' s = f' (\k' _ -> k k' s) k' s
+    g k k' s = let K7 (Tr f) _ = csst in f (\k' _ -> k k' s) k' s
+    g' k k' s = let K7 _ (Tr f') = csst in f' (\k' _ -> k k' s) k' s
 
 -- | Succeeds if input string is empty.
 --
