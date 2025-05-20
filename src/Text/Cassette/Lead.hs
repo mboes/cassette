@@ -7,23 +7,23 @@ import Text.Cassette.Internal.Tr (Tr(..))
 import Text.Cassette.Prim
 
 -- | Nullary leads. Synonym to 'PP'.
-type NullL s = forall r. K7 Tr (s -> r) r
+type NullL s = forall r. K7 Tr r (s -> r)
 
 -- | Unary leads. A lead of type @'UnL' s a@ projects/injects a component @a@
 -- from/into outer type @s@.
-type UnL s a = forall r. K7 Tr (s -> r) (a -> r)
+type UnL s a = forall r. K7 Tr (a -> r) (s -> r)
 
 -- | Binary leads. A lead of type @'BinL' s a b@ projects/injects components
 -- @a@, @b@ from/into outer type @s@.
-type BinL s a b = forall r. K7 Tr (s -> r) (b -> a -> r)
+type BinL s a b = forall r. K7 Tr (a -> b -> r) (s -> r)
 
 -- | Ternary leads. A lead of type @'TernL' s a b c@ projects/injects components
 -- @a@, @b@, @c@ from/into outer type @s@.
-type TernL s a b c = forall r. K7 Tr (s -> r) (c -> b -> a -> r)
+type TernL s a b c = forall r. K7 Tr (a -> b -> c -> r) (s -> r)
 
 -- | Quaternary leads. A lead of type @'QuaternL' s a b c d@ projects/injects
 -- components @a@, @b@, @c@, @d@ from/into outer type @s@.
-type QuaternL s a b c d = forall r. K7 Tr (s -> r) (d -> c -> b -> a -> r)
+type QuaternL s a b c d = forall r. K7 Tr (a -> b -> c -> d -> r) (s -> r)
 
 -- | Lift an isomorphism (see the
 -- [lens](https://hackage.haskell.org/package/lens) library) to a lead.
@@ -77,8 +77,8 @@ catanal _ = error "unimplemented"
 consL :: BinL [a] a [a]
 consL = K7 (Tr leadout) (Tr leadin)
   where
-    leadout k k' s u = k (\s _ -> k' s u) s (\xs' x -> u (x:xs'))
-    leadin k k' s xs@(x:xs') = k (\s _ _ -> k' s xs) s xs' x
+    leadout k k' s u = k (\s _ -> k' s u) s (\x xs' -> u (x:xs'))
+    leadin k k' s xs@(x:xs') = k (\s _ _ -> k' s xs) s x xs'
     leadin _ k' s xs = k' s xs
 
 -- | '[]' lead.
@@ -109,19 +109,19 @@ nothingL = K7 (Tr leadout) (Tr leadin)
 pairL :: BinL (a, b) a b
 pairL = K7 (Tr leadout) (Tr leadin)
   where
-    leadout k k' s u = k (\s _ -> k' s u) s (\x2 x1 -> u (x1, x2))
-    leadin k k' s t@(x1, x2) = k (\s _ _ -> k' s t) s x2 x1
+    leadout k k' s u = k (\s _ -> k' s u) s (\x1 x2 -> u (x1, x2))
+    leadin k k' s t@(x1, x2) = k (\s _ _ -> k' s t) s x1 x2
 
 -- | Construct/destruct a 3-tuple.
 tripleL :: TernL (a, b, c) a b c
 tripleL = K7 (Tr leadout) (Tr leadin)
   where
-    leadout k k' s u = k (\s _ -> k' s u) s (\x3 x2 x1 -> u (x1, x2, x3))
-    leadin k k' s t@(x1, x2, x3) = k (\s _ _ _ -> k' s t) s x3 x2 x1
+    leadout k k' s u = k (\s _ -> k' s u) s (\x1 x2 x3 -> u (x1, x2, x3))
+    leadin k k' s t@(x1, x2, x3) = k (\s _ _ _ -> k' s t) s x1 x2 x3
 
 -- | Construct/destruct a 4-tuple.
 quadrupleL :: QuaternL (a, b, c, d) a b c d
 quadrupleL = K7 (Tr leadout) (Tr leadin)
   where
-    leadout k k' s u = k (\s _ -> k' s u) s (\x4 x3 x2 x1 -> u (x1, x2, x3, x4))
-    leadin k k' s t@(x1, x2, x3, x4) = k (\s _ _ _ _ -> k' s t) s x4 x3 x2 x1
+    leadout k k' s u = k (\s _ -> k' s u) s (\x1 x2 x3 x4 -> u (x1, x2, x3, x4))
+    leadin k k' s t@(x1, x2, x3, x4) = k (\s _ _ _ _ -> k' s t) s x1 x2 x3 x4

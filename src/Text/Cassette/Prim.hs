@@ -31,15 +31,14 @@ import Control.Category (Category(..))
 import Data.List (stripPrefix)
 import GHC.Stack (HasCallStack)
 import Prelude hiding (flip, id, (.))
-import Prelude qualified
 import Text.Cassette.Internal.Tr (Tr(..))
 import Text.Cassette.Internal.Tr qualified as Tr
 
 -- | A cassette consists of two tracks, represented by profunctors. The
 -- functions on each track are inverses of each other.
 data K7 p a b = K7
-  { sideA :: forall t. p (b -> t) (a -> t)
-  , sideB :: p b a
+  { sideA :: forall t. p (a -> t) (b -> t)
+  , sideB :: p a b
   }
 
 instance (forall r r'. Semigroup (p r r')) => Semigroup (K7 p r r') where
@@ -51,20 +50,19 @@ instance (forall r r'. Monoid (p r r')) => Monoid (K7 p r r') where
 instance Category p => Category (K7 p) where
   id = K7 id id
   -- Irrefutable patterns to support definitions of combinators by coinduction.
-  ~(K7 f f') . ~(K7 g g') = K7 (g . f) (g' . f')
+  ~(K7 f f') . ~(K7 g g') = K7 (f . g) (f' . g')
 
-infixr 7 -->
+infixr 9 -->
 
--- | A synonym to '(.)' with its arguments flipped and with lower precedence,
--- but higher precedence than '(<>)'.
-(-->) :: Category p => K7 p a b -> K7 p b c -> K7 p a c
-(-->) = Prelude.flip (.)
+-- | A synonym to '(.)'
+(-->) :: Category p => K7 p b c -> K7 p a b -> K7 p a c
+(-->) = (.)
 
 -- | The type of cassettes with a string transformer on each side. The A-side
 -- produces a value in addition to transforming the string, /i.e./ it is
 -- a parser. The B-side consumes a value to transform the string, /i.e./ it is
 -- a printer.
-type PP a = forall r. K7 Tr (a -> r) r
+type PP a = forall r. K7 Tr r (a -> r)
 
 -- | The type of cassettes only useful for their effect on the input or output
 -- strings, but do not produce\/consume any value.
@@ -83,10 +81,9 @@ pretty (K7 _ f') = unTr f' (const Just) (\_ _ -> Nothing) ""
 -- continuation @k@.
 --
 -- >>> spec = satisfy (=='A') . satisfy (=='B') . satisfy (=='C')
--- >>> k c b a = (a, b, c)
--- >>> sscanf spec k "ABC"
+-- >>> sscanf spec (,,) "ABC"
 -- ('A','B','C')
-sscanf :: HasCallStack => K7 Tr r r' -> r -> String -> r'
+sscanf :: HasCallStack => K7 Tr r r' -> r' -> String -> r
 sscanf (K7 f _) k s = unTr f (\_ _ -> id) (\_ _ -> error msg) s k
   where
     msg = "sscanf: formatting error"
@@ -96,9 +93,9 @@ sscanf (K7 f _) k s = unTr f (\_ _ -> id) (\_ _ -> error msg) s k
 -- @fmt@.
 --
 -- >>> spec = satisfy (=='A') . satisfy (=='B') . satisfy (=='C')
--- >>> sprintf spec 'C' 'B' 'A'
+-- >>> sprintf spec 'A' 'B' 'C'
 -- "ABC"
-sprintf :: HasCallStack => K7 Tr r String -> r
+sprintf :: HasCallStack => K7 Tr String r -> r
 sprintf (K7 _ f') = unTr f' (\_ -> id) (\_ -> error msg) ""
   where
     msg = "sprintf: formatting error"
@@ -126,7 +123,7 @@ unset :: a -> PP a -> PP0
 unset x ~(K7 f f') = K7 (Tr.pop' . f) (Tr.push x . f')
 
 write :: (a -> String) -> Tr r (a -> r)
-write f = Tr $ \k k' s x -> k (\s -> k' s x) (f x ++ s)
+write f = Tr $ \k k' s x -> k (\s -> k' s x) (s ++ f x)
 
 write0 :: String -> Tr r r
 write0 x = Tr $ \k k' s -> unTr (write id) k (\s _ -> k' s) s x
@@ -145,7 +142,7 @@ satisfy p = K7 (Tr f) (Tr f')
       | p c = k (\cs _ -> k' cs u) cs (u c)
     f _ k' s u = k' s u
     f' k k' s x
-      | p x = k (\s -> k' s x) (x:s)
+      | p x = k (\s -> k' s x) (s ++ [x])
       | otherwise = k' s x
 
 -- | Parse\/print without consuming\/producing any input.

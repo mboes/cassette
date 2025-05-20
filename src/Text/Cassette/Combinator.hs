@@ -19,7 +19,7 @@ choice (p:ps) = p <> choice ps
 -- | @count n p@ matches @n@ occurrences of @p@.
 count :: Int -> PP a -> PP [a]
 count 0 _ = nilL
-count n p = consL --> p . count (n - 1) p
+count n p = consL . p . count (n - 1) p
 
 -- | Tries to apply the given cassette. It returns the value of the cassette on
 -- success, the first argument otherwise.
