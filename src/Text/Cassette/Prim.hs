@@ -31,6 +31,7 @@ module Text.Cassette.Prim
 
 import Control.Category (Category(..))
 import Data.List (stripPrefix)
+import GHC.Stack (HasCallStack)
 import Prelude hiding (flip, id, (.))
 import Prelude qualified
 import Text.Cassette.Internal.Tr (Tr(..))
@@ -92,7 +93,7 @@ pretty csst = unTr (play (flip csst)) (const Just) (\_ _ -> Nothing) ""
 -- >>> k c b a = (a, b, c)
 -- >>> sscanf spec k "ABC"
 -- ('A','B','C')
-sscanf :: K7 Tr r r' -> r -> String -> r'
+sscanf :: HasCallStack => K7 Tr r r' -> r -> String -> r'
 sscanf csst k = unTr (play csst) (\_ _ -> k) (\_ -> error "sscanf: formatting error")
 
 -- | An equivalent to @sprintf()@ in C: @'sprintf' fmt@ returns a function that
@@ -102,7 +103,7 @@ sscanf csst k = unTr (play csst) (\_ _ -> k) (\_ -> error "sscanf: formatting er
 -- >>> spec = satisfy (=='A') . satisfy (=='B') . satisfy (=='C')
 -- >>> sprintf spec 'C' 'B' 'A'
 -- "ABC"
-sprintf :: K7 Tr r String -> r
+sprintf :: HasCallStack => K7 Tr r String -> r
 sprintf csst = unTr (play (flip csst)) (\_ -> id) (\_ -> error "sprintf: formatting error") ""
 
 -- | Do nothing.
