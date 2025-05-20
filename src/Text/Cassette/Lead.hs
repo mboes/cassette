@@ -49,13 +49,14 @@ prismL l = K7 (Tr leadout) (Tr leadin)
 -- The type of this function is the same as that of 'foldr', lifted to
 -- cassettes.
 catanar :: BinL b a b -> BinL b b [a]
-catanar (K7 (Tr f) (Tr f')) = K7 (Tr g) (Tr g')
-  where
-    g k k' s xs@[]      z = k (\s _ -> k' s xs z) s z
-    g k k' s xs@(x:xs') z =
-      g (\k' s z -> f k (\s _ _ -> k' s z) s z x) (\s _ _ -> k' s xs z) s xs' z
-    g' k k' s z =
-      f' (\k' s z x -> g' (\k' s xs' z -> k k' s (x:xs') z) (\s _ -> k' s z x) s z) (\s _ -> k (\s _ _ -> k' s z) s [] z) s z
+catanar _ = error "unimplemented"
+-- catanar (K7 (Tr f) (Tr f')) = K7 (Tr g) (Tr g')
+--   where
+--     g k k' s xs@[]      z = k (\s _ -> k' s xs z) s z
+--     g k k' s xs@(x:xs') z =
+--       g (\k' s z -> f k (\s _ _ -> k' s z) s z x) (\s _ _ -> k' s xs z) s xs' z
+--     g' k k' s z =
+--       f' (\k' s z x -> g' (\k' s xs' z -> k k' s (x:xs') z) (\s _ -> k' s z x) s z) (\s _ -> k (\s _ _ -> k' s z) s [] z) s z
 
 -- | Iterates a one step construction function (resp. deconstruction) function,
 -- i.e. a lead, thus obtaining a left fold (resp. unfold). The resulting lead is
@@ -63,13 +64,14 @@ catanar (K7 (Tr f) (Tr f')) = K7 (Tr g) (Tr g')
 -- The type of this function is the same as that of 'foldl', lifted to
 -- cassettes.
 catanal :: BinL a a b -> BinL a a [b]
-catanal (K7 (Tr f) (Tr f')) = K7 (Tr g) (Tr (g' []))
-  where
-    g k k' s xs@[]      z = k (\s _ -> k' s xs z) s z
-    g k k' s xs@(x:xs') z =
-      f (\k' s z -> g k (\s _ _ -> k' s z) s xs' z) (\s _ _ -> k' s xs z) s x z
-    g' xs' k k' s z =
-      f' (\k' s x z -> g' (x:xs') k (\s _ -> k' s x z) s z) (\s _ -> k (\s _ _ -> k' s z) s xs' z) s z
+catanal _ = error "unimplemented"
+-- catanal (K7 (Tr f) (Tr f')) = K7 (Tr g) (Tr (g' []))
+--   where
+--     g k k' s xs@[]      z = k (\s _ -> k' s xs z) s z
+--     g k k' s xs@(x:xs') z =
+--       f (\k' s z -> g k (\s _ _ -> k' s z) s xs' z) (\s _ _ -> k' s xs z) s x z
+--     g' xs' k k' s z =
+--       f' (\k' s x z -> g' (x:xs') k (\s _ -> k' s x z) s z) (\s _ -> k (\s _ _ -> k' s z) s xs' z) s z
 
 -- | '(:)' lead.
 consL :: BinL [a] a [a]
