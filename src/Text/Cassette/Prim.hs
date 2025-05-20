@@ -153,8 +153,8 @@ satisfy p = K7 (Tr f) (Tr f')
 lookAhead :: PP a -> PP a
 lookAhead csst = K7 (Tr g) (Tr g')
   where
-    g k k' s = let K7 (Tr f) _ = csst in f (\k' _ -> k k' s) k' s
-    g' k k' s = let K7 _ (Tr f') = csst in f' (\k' _ -> k k' s) k' s
+    g k k' s = unTr (sideA csst) (\k' _ -> k k' s) k' s
+    g' k k' s = unTr (sideB csst) (\k' _ -> k k' s) k' s
 
 -- | Succeeds if input string is empty.
 --
