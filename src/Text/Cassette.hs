@@ -23,8 +23,8 @@
 --
 -- >>> :{
 --   varL = prismL _Var
---   absL = pairL . prismL _Abs
---   appL = pairL . prismL _App
+--   absL = prismL _Abs . pairL
+--   appL = prismL _App . pairL
 -- :}
 --
 -- ... the concrete syntax for terms of the λ-calculus can be defined
