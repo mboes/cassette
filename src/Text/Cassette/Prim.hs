@@ -37,8 +37,8 @@ import Text.Cassette.Internal.Tr qualified as Tr
 -- | A cassette consists of two tracks, represented by profunctors. The
 -- functions on each track are inverses of each other.
 data K7 p a b = K7
-  { sideA :: forall t. p (a -> t) (b -> t)
-  , sideB :: p a b
+  { sideA :: p a b
+  , sideB :: forall t. p (a -> t) (b -> t)
   }
 
 instance (forall r r'. Semigroup (p r r')) => Semigroup (K7 p r r') where
@@ -70,11 +70,11 @@ type PP0 = forall r. K7 Tr r r
 
 -- | Extract the parser from a cassette.
 parse :: PP a -> String -> Maybe a
-parse (K7 f _) s = unTr f (\_ _ x -> Just x) (\_ _ -> Nothing) s id
+parse (K7 _ f') s = unTr f' (\_ _ x -> Just x) (\_ _ -> Nothing) s id
 
 -- | Flip the cassette around to extract the pretty printer.
 pretty :: PP a -> a -> Maybe String
-pretty (K7 _ f') = unTr f' (const Just) (\_ _ -> Nothing) ""
+pretty (K7 f _) = unTr f (const Just) (\_ _ -> Nothing) ""
 
 -- | An equivalent to @sscanf()@ in C: @'sscanf' fmt k s@ extracts data from
 -- string @s@ according to format descriptor @fmt@ and hands the data to
@@ -84,7 +84,7 @@ pretty (K7 _ f') = unTr f' (const Just) (\_ _ -> Nothing) ""
 -- >>> sscanf spec (,,) "ABC"
 -- ('A','B','C')
 sscanf :: HasCallStack => K7 Tr r r' -> r' -> String -> r
-sscanf (K7 f _) k s = unTr f (\_ _ -> id) (\_ _ -> error msg) s k
+sscanf (K7 _ f') k s = unTr f' (\_ _ -> id) (\_ _ -> error msg) s k
   where
     msg = "sscanf: formatting error"
 
@@ -96,7 +96,7 @@ sscanf (K7 f _) k s = unTr f (\_ _ -> id) (\_ _ -> error msg) s k
 -- >>> sprintf spec 'A' 'B' 'C'
 -- "ABC"
 sprintf :: HasCallStack => K7 Tr String r -> r
-sprintf (K7 _ f') = unTr f' (\_ -> id) (\_ -> error msg) ""
+sprintf (K7 f _) = unTr f (\_ -> id) (\_ -> error msg) ""
   where
     msg = "sprintf: formatting error"
 
@@ -113,14 +113,14 @@ nothing = id
 -- pure transformer. @'set' x p@ provides @x@ as the output of @p@ on the
 -- parsing side, and on the printing side accepts an input that is ignored.
 set :: a -> PP0 -> PP a
-set x ~(K7 f f') = K7 (Tr.push' x . f) (Tr.pop . f')
+set x ~(K7 f f') = K7 (Tr.pop . f) (Tr.push' x . f')
 
 -- | Turn the given parsing\/printing pair into a pure string transformer. That
 -- is, return a cassette that does not produce an output or consume an input.
 -- @'unset' x p@ throws away the output of @p@ on the parsing side, and on the
 -- printing side sets the input to @x@.
 unset :: a -> PP a -> PP0
-unset x ~(K7 f f') = K7 (Tr.pop' . f) (Tr.push x . f')
+unset x ~(K7 f f') = K7 (Tr.push x . f) (Tr.pop' . f')
 
 write :: (a -> String) -> Tr r (a -> r)
 write f = Tr $ \k k' s x -> k (\s -> k' s x) (s ++ f x)
@@ -132,18 +132,18 @@ write0 x = Tr $ \k k' s -> unTr (write id) k (\s _ -> k' s) s x
 string :: String -> PP0
 -- We could implement 'string' in terms of many, satisfy, char and unshift, but
 -- don't, purely to reduce unnecessary choice points during parsing.
-string x = K7 (Tr $ \k k' s -> maybe (k' s) (k k') $ stripPrefix x s) (write0 x)
+string x = K7 (write0 x) (Tr $ \k k' s -> maybe (k' s) (k k') $ stripPrefix x s)
 
 -- | Successful only if predicate holds.
 satisfy :: (Char -> Bool) -> PP Char
 satisfy p = K7 (Tr f) (Tr f')
   where
-    f k k' (c:cs) u
-      | p c = k (\cs _ -> k' cs u) cs (u c)
-    f _ k' s u = k' s u
-    f' k k' s x
+    f k k' s x
       | p x = k (\s -> k' s x) (s ++ [x])
       | otherwise = k' s x
+    f' k k' (c:cs) u
+      | p c = k (\cs _ -> k' cs u) cs (u c)
+    f' _ k' s u = k' s u
 
 -- | Parse\/print without consuming\/producing any input.
 --
