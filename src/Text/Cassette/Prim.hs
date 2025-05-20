@@ -113,14 +113,14 @@ nothing = id
 -- pure transformer. @'set' x p@ provides @x@ as the output of @p@ on the
 -- parsing side, and on the printing side accepts an input that is ignored.
 set :: a -> PP0 -> PP a
-set x ~(K7 f f') = K7 (Tr.pop . f) (Tr.push' x . f')
+set x ~(K7 f f') = K7 (Tr.popNeg . f) (Tr.pushPos x . f')
 
 -- | Turn the given parsing\/printing pair into a pure string transformer. That
 -- is, return a cassette that does not produce an output or consume an input.
 -- @'unset' x p@ throws away the output of @p@ on the parsing side, and on the
 -- printing side sets the input to @x@.
 unset :: a -> PP a -> PP0
-unset x ~(K7 f f') = K7 (Tr.push x . f) (Tr.pop' . f')
+unset x ~(K7 f f') = K7 (Tr.pushNeg x . f) (Tr.popPos . f')
 
 write :: (a -> String) -> Tr r (a -> r)
 write f = Tr $ \k k' s x -> k (\s -> k' s x) (s ++ f x)

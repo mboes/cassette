@@ -36,14 +36,14 @@ plug k (Tr f) = Tr (\_ -> f k)
 replace :: C r -> Tr w r
 replace k = plug k id
 
-push :: a -> Tr (a -> r) r
-push x = shift (\k -> replace (\k' s -> k (\s _ -> k' s) s x))
+pushNeg :: a -> Tr (a -> r) r
+pushNeg x = shift (\k -> replace (\k' s -> k (\s _ -> k' s) s x))
 
-pop :: Tr r (a -> r)
-pop = shift (\k -> replace (\k' s x -> k (\s -> k' s x) s))
+popNeg :: Tr r (a -> r)
+popNeg = shift (\k -> replace (\k' s x -> k (\s -> k' s x) s))
 
-push' :: a -> Tr (r -> r') ((a -> r) -> r')
-push' x = shift (\k -> replace (\k' s u -> k (\s u -> k' s (\_ -> u)) s (u x)))
+pushPos :: a -> Tr (r -> r') ((a -> r) -> r')
+pushPos x = shift (\k -> replace (\k' s u -> k (\s u -> k' s (\_ -> u)) s (u x)))
 
-pop' :: Tr ((a -> r) -> r') (r -> r')
-pop' = shift (\k -> replace (\k' s u -> k (\s _ -> k' s u) s (\_ -> u)))
+popPos :: Tr ((a -> r) -> r') (r -> r')
+popPos = shift (\k -> replace (\k' s u -> k (\s _ -> k' s u) s (\_ -> u)))
