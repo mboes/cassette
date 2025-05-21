@@ -43,7 +43,7 @@ popNeg :: Tr r (a -> r)
 popNeg = shift (\k -> replace (\k' s x -> k (\s -> k' s x) s))
 
 pushPos :: a -> Tr (r -> r') ((a -> r) -> r')
-pushPos x = shift (\k -> replace (\k' s u -> k (\s u -> k' s (\_ -> u)) s (u x)))
+pushPos x = shift (\k -> replace (\k' s u -> k (\s _ -> k' s u) s (u x)))
 
 popPos :: Tr ((a -> r) -> r') (r -> r')
 popPos = shift (\k -> replace (\k' s u -> k (\s _ -> k' s u) s (\_ -> u)))
