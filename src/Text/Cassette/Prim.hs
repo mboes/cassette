@@ -81,10 +81,10 @@ pretty (K7 f _) = unTr f (const Just) (\_ _ -> Nothing) ""
 -- continuation @k@.
 --
 -- >>> spec = satisfy (=='A') . satisfy (=='B') . satisfy (=='C')
--- >>> sscanf spec (,,) "ABC"
+-- >>> sscanf spec "ABC" (,,)
 -- ('A','B','C')
-sscanf :: HasCallStack => K7 Tr r r' -> r' -> String -> r
-sscanf (K7 _ f') k s = unTr f' (\_ _ -> id) (\_ _ -> error msg) s k
+sscanf :: HasCallStack => K7 Tr r r' -> String -> r' -> r
+sscanf (K7 _ f') = unTr f' (\_ _ -> id) (\_ _ -> error msg)
   where
     msg = "sscanf: formatting error"
 
