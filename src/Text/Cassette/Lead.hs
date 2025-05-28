@@ -82,7 +82,7 @@ consL = K7 (Tr leadin) (Tr leadout)
     leadout k k' s u = k (\s _ -> k' s u) s (\x xs' -> u (x:xs'))
 
 -- | '[]' lead.
-nilL :: PP [a]
+nilL :: NullL [a]
 nilL = K7 (Tr leadin) (Tr leadout)
   where
     leadin k k' s xs@[] = k (\s -> k' s xs) s

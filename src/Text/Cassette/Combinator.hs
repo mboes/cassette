@@ -19,7 +19,7 @@ choice (p:ps) = p <> choice ps
 -- | @count n p@ matches @n@ occurrences of @p@.
 count :: Int -> PP a -> PP [a]
 count 0 _ = nilL
-count n p = consL . p . count (n - 1) p
+count n p = consL --> p . count (n - 1) p
 
 -- | Tries to apply the given cassette. It returns the value of the cassette on
 -- success, the first argument otherwise.
@@ -69,7 +69,7 @@ sepBy1 px psep = consL --> px . many (psep . px)
 chainl :: PP0 -> BinL a a a -> PP a -> a -> PP a
 chainl opP opL xP dflt = chainl1 opP opL xP <> set dflt nothing
 
--- | Match a a left-associative chain of infix operators.
+-- | Match a left-associative chain of infix operators.
 chainl1 :: PP0 -> BinL a a a -> PP a -> PP a
 chainl1 opP opL xP = catanal opL --> xP . many (opP . xP)
 
@@ -80,7 +80,7 @@ chainl1 opP opL xP = catanal opL --> xP . many (opP . xP)
 chainr :: PP0 -> BinL a a a -> PP a -> a -> PP a
 chainr opP opL xP dflt = chainr1 opP opL xP <> set dflt nothing
 
--- | Match a a right-associative chain of infix operators.
+-- | Match a right-associative chain of infix operators.
 chainr1 :: PP0 -> BinL a a a -> PP a -> PP a
 chainr1 opP opL xP = catanar opL --> xP . many (opP . xP)
 
