@@ -105,6 +105,13 @@ nothingL = K7 (Tr leadin) (Tr leadout)
     leadin _ k' s mb = k' s mb
     leadout k k' s u = k (\s _ -> k' s u) s (u Nothing)
 
+-- | Construct/destruct the unit element.
+unitL :: NullL ()
+unitL = K7 (Tr leadin) (Tr leadout)
+  where
+    leadin k k' s t@() = k (\s -> k' s t) s
+    leadout k k' s u = k (\s _ -> k' s u) s (u ())
+
 -- | Construct/destruct a pair.
 pairL :: BinL (a, b) a b
 pairL = K7 (Tr leadin) (Tr leadout)
