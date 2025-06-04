@@ -1,6 +1,6 @@
 -- | The combinators of this library are all pairs of functions going in
 -- opposite directions. These pairs are called /cassettes/, sporting two tracks
--- (the two functions), one of which is read is one direction, the other of
+-- (the two functions), one of which is read in one direction, the other of
 -- which (accessed by flipping the cassette) is read in the opposite direction.
 --
 -- = __Example__
