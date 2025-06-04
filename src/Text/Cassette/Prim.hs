@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE RankNTypes #-}
@@ -123,16 +124,16 @@ unset :: a -> PP a -> PP0
 unset x ~(K7 f f') = K7 (Tr.pushNeg x . f) (Tr.popPos . f')
 
 write :: (a -> String) -> Tr r (a -> r)
-write f = Tr $ \k k' s x -> k (\s -> k' s x) (s ++ f x)
+write f = Tr \k k' s x -> k (\s -> k' s x) (s ++ f x)
 
 write0 :: String -> Tr r r
-write0 x = Tr $ \k k' s -> unTr (write id) k (\s _ -> k' s) s x
+write0 x = Tr \k k' s -> unTr (write id) k (\s _ -> k' s) s x
 
 -- | Strip\/add the given string from\/to the output string.
 string :: String -> PP0
 -- We could implement 'string' in terms of many, satisfy, char and unshift, but
 -- don't, purely to reduce unnecessary choice points during parsing.
-string x = K7 (write0 x) (Tr $ \k k' s -> maybe (k' s) (k k') $ stripPrefix x s)
+string x = K7 (write0 x) (Tr \k k' s -> maybe (k' s) (k k') $ stripPrefix x s)
 
 -- | Successful only if predicate holds.
 satisfy :: (Char -> Bool) -> PP Char
