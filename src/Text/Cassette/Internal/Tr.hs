@@ -5,8 +5,8 @@ module Text.Cassette.Internal.Tr where
 import Control.Category (Category(..))
 import Prelude hiding (flip, id, (.))
 
---- | The type of string transformers in CPS, /i.e./ functions from strings to
---- strings.
+-- | The type of string transformers in CPS, /i.e./ functions from strings to
+-- strings.
 type C r = (String -> r) -> String -> r
 
 -- | @'Tr' r r'@ is the type of string transformers with answer type
