@@ -9,6 +9,10 @@ license-file: LICENSE
 cabal-version: >= 1.10.0
 build-type: Simple
 
+extra-doc-files:
+  CHANGELOG.md
+  README.md
+
 library
   hs-source-dirs: src
   build-depends:
