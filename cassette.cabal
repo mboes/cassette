@@ -1,5 +1,5 @@
 name: cassette
-version: 0.1.0
+version: 0.2.0
 author: Mathieu Boespflug
 maintainer: Mathieu Boespflug <m@boespfl.ug>
 synopsis: A combinator library for simultaneously defining parsers and pretty printers.
