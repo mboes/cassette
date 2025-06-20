@@ -6,12 +6,17 @@ synopsis: A combinator library for simultaneously defining parsers and pretty pr
 category: Parsing, Text
 license: Apache-2.0
 license-file: LICENSE
+bug-reports: https://github.com/mboes/cassette/issues
 cabal-version: >= 1.10.0
 build-type: Simple
 
 extra-doc-files:
   CHANGELOG.md
   README.md
+
+source-repository head
+  type:     git
+  location: https://github.com/mboes/cassette
 
 library
   hs-source-dirs: src
