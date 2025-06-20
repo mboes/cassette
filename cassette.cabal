@@ -9,7 +9,7 @@ category: Parsing, Text
 license: Apache-2.0
 license-file: LICENSE
 bug-reports: https://github.com/mboes/cassette/issues
-cabal-version: >= 1.10.0
+cabal-version: 1.18.0
 build-type: Simple
 
 extra-doc-files:
