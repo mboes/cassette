@@ -3,12 +3,6 @@ version: 0.1.0
 author: Mathieu Boespflug
 maintainer: Mathieu Boespflug <m@boespfl.ug>
 synopsis: A combinator library for simultaneously defining parsers and pretty printers.
-description:
-  Combinator library for defining both type safe parsers and pretty
-  printers simultaneously. This library performs well in practice
-  because parsers and printers are implemented in CPS and because
-  arguments are always curried, rather than packed into nested
-  tuples.
 category: Parsing, Text
 license: Apache-2.0
 license-file: LICENSE
