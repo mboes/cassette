@@ -2,7 +2,9 @@ name: cassette
 version: 0.2.0
 author: Mathieu Boespflug
 maintainer: Mathieu Boespflug <m@boespfl.ug>
-synopsis: A combinator library for simultaneously defining parsers and pretty printers.
+synopsis: Combinators to simultaneously define parsers and pretty printers
+description:
+  Proof of concept.
 category: Parsing, Text
 license: Apache-2.0
 license-file: LICENSE
